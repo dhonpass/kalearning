@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Birds</title>
+    <style>
+      /* === RESET & BASE === */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          "Fredoka",
+          "sans-serif",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #fffef7;
+        min-height: 100vh;
+        padding: 16px;
+        color: #333;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* === PAGE LAYOUT === */
+      .page {
+        width: 100%;
+        max-width: 620px;
+        margin: 0 auto;
+      }
+
+      /* === TOP NAVIGATION === */
+      .top-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 14px;
+        padding: 0 px;
+      }
+
+      /* === BUTTONS === */
+      .pill-btn {
+        background: #ff5d9e;
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 999px;
+        font-size: 17px;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow:
+          0 6px 16px rgba(255, 93, 158, 0.35),
+          0 2px 4px rgba(255, 93, 158, 0.2);
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .pill-btn:hover {
+        transform: translateY(-2px);
+        box-shadow:
+          0 8px 20px rgba(255, 93, 158, 0.4),
+          0 3px 6px rgba(255, 93, 158, 0.25);
+      }
+
+      .pill-btn:active {
+        transform: translateY(0px) scale(0.98);
+      }
+
+      /* === MAIN CARD === */
+      .main-card {
+        background: white;
+        border-radius: 40px;
+        padding: 32px 20px 36px;
+        box-shadow:
+          0 24px 60px rgba(0, 0, 0, 0.08),
+          0 8px 20px rgba(0, 0, 0, 0.04);
+        max-width: 580px;
+        margin: 0 auto;
+        margin-top: 50px;
+        text-align: center;
+      }
+
+      .page-title {
+        font-family: "Fredoka", sans-serif;
+        color: #ff4b87;
+        font-size: clamp(28px, 8vw, 48px);
+        font-weight: 600;
+        margin-bottom: 20px;
+        letter-spacing: -0.5px;
+        text-align: center;
+      }
+
+      /* === LEARNING AREA === */
+      .learning-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 26px;
+      }
+
+      /* === NAVIGATION BUTTONS === */
+      .nav-circle {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 8px 20px rgb(180, 180, 180);
+        transition: transform 0.2s ease;
+        animation: float 3s ease-in-out infinite;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .nav-circle:hover {
+        transform: scale(1.08);
+      }
+
+      .nav-circle:active {
+        transform: scale(0.95);
+      }
+
+      .nav-left {
+        background: #ffc933;
+        color: white;
+      }
+
+      .nav-right {
+        background: #ffc933;
+        color: #ffffff;
+        animation-delay: 1.5s;
+      }
+
+      .nav-circle svg {
+        width: 30px;
+        height: 30px;
+        stroke: currentColor;
+        stroke-width: 3.5;
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* === IMAGE DISPLAY BOX === */
+      .image-display {
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(145deg, #ffeff5 0%, #ffc3db 100%);
+        border-radius: 32px;
+        border: 8px solid rgb(255, 62, 62);
+        box-shadow:
+          0 16px 32px rgba(255, 115, 0, 0.28),
+          inset 0 2px 0 rgb(182, 36, 0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        object-fit: contain;
+      }
+
+      .image-display img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.18));
+        user-select: none;
+        pointer-events: none;
+      }
+
+      /* === TEXT PILL === */
+      .word-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: #cff7cf;
+        padding: 14px 32px;
+        border-radius: 999px;
+        margin-bottom: 28px;
+        box-shadow: inset 0 1px 3px rgba(255, 46, 139, 0.12);
+      }
+
+      .word-pill .star {
+        color: #008f00;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .word-pill .word {
+        color: #008f00;
+        font-size: 22px;
+        font-weight: 900;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+      }
+
+      /* === PROGRESS DOTS === */
+      .progress-dots {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        height: 20px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #63d863;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: pointer;
+      }
+
+      .dot.active {
+        width: 28px;
+        border-radius: 8px;
+        background: #008f00;
+      }
+
+      /* === ANIMATIONS === */
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0.85);
+          opacity: 0.8;
+        }
+        50% {
+          transform: scale(1.08);
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .image-display.pop {
+        animation: pop 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      /* === RESPONSIVE === */
+      @media (min-width: 480px) {
+        body {
+          padding: 24px;
+        }
+
+        .main-card {
+          padding: 40px 32px 44px;
+        }
+
+        .page-title {
+          font-size: 60px;
+          margin-bottom: 36px;
+        }
+
+        .learning-row {
+          gap: 24px;
+          margin-bottom: 32px;
+        }
+
+        .nav-circle {
+          width: 72px;
+          height: 72px;
+        }
+
+        .nav-circle svg {
+          width: 34px;
+          height: 34px;
+        }
+      }
+
+      @media (min-width: 640px) {
+        .image-display {
+          width: 300px;
+          height: 300px;
+        }
+      }
+
+      @media (max-width: 360px) {
+        .image-display {
+          width: 220px;
+          height: 220px;
+        }
+
+        .nav-circle {
+          width: 56px;
+          height: 56px;
+        }
+
+        .learning-row {
+          gap: 8px;
+        }
+
+        .page-title {
+          font-size: 38px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="top-nav">
+        <button class="pill-btn" id="backButton">← Back</button>
+        <button class="pill-btn" id="replayButton">Replay</button>
+      </header>
+
+      <main class="main-card">
+        <h1 class="page-title">Professional</h1>
+
+        <div class="learning-row">
+          <button
+            class="nav-circle nav-left"
+            id="prevButton"
+            aria-label="Previous"
+          >
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+
+          <div class="image-display" id="imageBox">
+            <img id="professionImage" src="" alt="Profession" />
+          </div>
+
+          <button
+            class="nav-circle nav-right"
+            id="nextButton"
+            aria-label="Next"
+          >
+            <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+          </button>
+        </div>
+
+        <div class="word-pill">
+          <span class="star">✦</span>
+          <span class="star">✦</span>
+          <span class="word" id="professionText">DOCTOR</span>
+          <span class="star">✦</span>
+          <span class="star">✦</span>
+        </div>
+
+        <div class="progress-dots" id="progressContainer"></div>
+      </main>
+    </div>
+
+    <script>
+      // === DATA: EDIT YOUR ITEMS HERE ===
+      const items = [
+        {
+          img: "images/subjects/birds/rooster.png",
+          text: "rooster ",
+          audio: "audio/colours/black.mp3",
+        },
+
+        {
+          img: "images/subjects/birds/crane.png",
+          text: "crane",
+          audio: "audio/colours/black.mp3",
+        },
+
+        {
+          img: "images/subjects/birds/crow.png ",
+          text: "crow",
+          audio: "audio/colours/black.mp3",
+        },
+
+        {
+          img: "images/subjects/birds/dove.png",
+          text: "dove",
+          audio: "audio/colours/black.mp3",
+        },
+        {
+          img: "images/subjects/birds/eagle.png",
+          text: "eagle",
+          audio: "audio/colours/orange.mp3",
+        },
+
+        {
+          img: "images/subjects/birds/ostreach.png",
+          text: "ostreach",
+          audio: "audio/colours/green.mp3",
+        },
+
+        {
+          img: "images/subjects/birds/owel.png",
+          text: "owel",
+          audio: "audio/colours/white.mp3",
+        },
+
+        {
+          img: "images/subjects/birds/parot.png",
+          text: "parot",
+          audio: "audio/colours/white.mp3",
+        },
+
+        {
+          img: "images/subjects/birds/peacok.png",
+          text: "peacok",
+          audio: "audio/colours/white.mp3",
+        },
+
+        {
+          img: "images/subjects/birds/pegon.png",
+          text: "pegon",
+          audio: "audio/colours/white.mp3",
+        },
+
+        {
+          img: "images/subjects/birds/sparrow.png",
+          text: "sparrow",
+          audio: "audio/colours/white.mp3",
+        },
+      ];
+
+      // === DOM ELEMENTS ===
+      const backButton = document.getElementById("backButton");
+      const replayButton = document.getElementById("replayButton");
+      const prevButton = document.getElementById("prevButton");
+      const nextButton = document.getElementById("nextButton");
+      const imageBox = document.getElementById("imageBox");
+      const professionImage = document.getElementById("professionImage");
+      const professionText = document.getElementById("professionText");
+      const progressContainer = document.getElementById("progressContainer");
+
+      // === STATE ===
+      let currentIndex = 0;
+      let currentAudio = null;
+
+      // === INITIALIZATION ===
+      function init() {
+        createProgressDots();
+        updateDisplay();
+      }
+
+      // === CORE FUNCTIONS ===
+      function updateDisplay() {
+        const item = items[currentIndex];
+
+        // Update image and text
+        professionImage.src = item.img;
+        professionImage.alt = item.text;
+        professionText.textContent = item.text;
+
+        // Trigger pop animation
+        triggerPopAnimation();
+
+        // Update progress dots
+        updateProgressDots();
+
+        // Play audio if available
+        playItemAudio(item.audio);
+      }
+
+      function triggerPopAnimation() {
+        imageBox.classList.remove("pop");
+        // Force reflow to restart animation
+        void imageBox.offsetWidth;
+        imageBox.classList.add("pop");
+      }
+
+      function playItemAudio(audioSrc) {
+        // Stop previous audio
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+
+        // Play new audio if provided
+        if (audioSrc && audioSrc.trim() !== "") {
+          try {
+            currentAudio = new Audio(audioSrc);
+            currentAudio.play().catch(() => {
+              // Silent fail for autoplay restrictions
+            });
+          } catch (e) {
+            console.log("Audio play failed:", e);
+          }
+        }
+      }
+
+      function goToNext() {
+        currentIndex = (currentIndex + 1) % items.length;
+        updateDisplay();
+      }
+
+      function goToPrev() {
+        currentIndex = (currentIndex - 1 + items.length) % items.length;
+        updateDisplay();
+      }
+
+      function resetToFirst() {
+        currentIndex = 0;
+        updateDisplay();
+      }
+
+      function createProgressDots() {
+        progressContainer.innerHTML = "";
+        items.forEach((_, index) => {
+          const dot = document.createElement("div");
+          dot.className = "dot";
+          dot.addEventListener("click", () => {
+            currentIndex = index;
+            updateDisplay();
+          });
+          progressContainer.appendChild(dot);
+        });
+      }
+
+      function updateProgressDots() {
+        const dots = progressContainer.querySelectorAll(".dot");
+        dots.forEach((dot, index) => {
+          dot.classList.toggle("active", index === currentIndex);
+        });
+      }
+
+      // === EVENT LISTENERS ===
+      backButton.addEventListener("click", () => {
+        window.location.href = "subjects.html";
+      });
+
+      replayButton.addEventListener("click", resetToFirst);
+
+      nextButton.addEventListener("click", goToNext);
+      prevButton.addEventListener("click", goToPrev);
+
+      // Keyboard navigation
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") goToNext();
+        if (e.key === "ArrowLeft") goToPrev();
+        if (e.key === "Home") resetToFirst();
+      });
+
+      // Swipe support for mobile
+      let touchStartX = 0;
+      imageBox.addEventListener(
+        "touchstart",
+        (e) => {
+          touchStartX = e.touches[0].clientX;
+        },
+        { passive: true },
+      );
+
+      imageBox.addEventListener(
+        "touchend",
+        (e) => {
+          const touchEndX = e.changedTouches[0].clientX;
+          const diff = touchStartX - touchEndX;
+          if (Math.abs(diff) > 50) {
+            if (diff > 0) goToNext();
+            else goToPrev();
+          }
+        },
+        { passive: true },
+      );
+
+      // Remove pop class after animation ends
+      imageBox.addEventListener("animationend", (e) => {
+        if (e.animationName === "pop") {
+          imageBox.classList.remove("pop");
+        }
+      });
+
+      // Start app
+      init();
+    </script>
+  </body>
+</html>

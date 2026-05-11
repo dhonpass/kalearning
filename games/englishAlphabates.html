@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,user-scalable=no"
+    />
+    <title>Alphabet Order Game</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        font-family: "Baloo 2", cursive;
+        background: linear-gradient(135deg, #ffe4f1 0%, #e0d4ff 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+      }
+
+      body {
+        font-family: "Baloo 2", "Noto Sans Tibetan", cursive;
+        background: linear-gradient(
+          180deg,
+          #fff7d6 0%,
+          #ffe4f1 30%,
+          #d6f0ff 70%,
+          #e0d4ff 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Floating colorful bubbles */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(
+            circle at 15% 20%,
+            rgba(255, 154, 0, 0.18) 0 120px,
+            transparent 121px
+          ),
+          radial-gradient(
+            circle at 85% 15%,
+            rgba(255, 90, 138, 0.18) 0 140px,
+            transparent 141px
+          ),
+          radial-gradient(
+            circle at 20% 85%,
+            rgba(46, 196, 182, 0.18) 0 160px,
+            transparent 161px
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(139, 92, 246, 0.16) 0 130px,
+            transparent 131px
+          ),
+          radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 207, 51, 0.12) 0 200px,
+            transparent 201px
+          );
+        animation: floatBubbles 25s ease-in-out infinite;
+        z-index: -2;
+        pointer-events: none;
+      }
+
+      /* Faint floating emojis */
+      body::after {
+        content: "🌈 ⭐ 🎈 🌸 🦋";
+        position: fixed;
+        top: 10%;
+        left: 0;
+        right: 0;
+        font-size: clamp(24px, 5vw, 40px);
+        opacity: 0.12;
+        display: flex;
+        justify-content: space-around;
+        animation: drift 30s linear infinite;
+        z-index: -1;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      @keyframes floatBubbles {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-30px) scale(1.05);
+        }
+      }
+      @keyframes drift {
+        0% {
+          transform: translateX(-10%);
+        }
+        100% {
+          transform: translateX(10%);
+        }
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .header h1 {
+        font-size: 26px;
+        color: #d63384;
+        font-weight: 800;
+      }
+      .header span {
+        font-size: 22px;
+        animation: bounce 2s ease-in-out infinite;
+      }
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-4px);
+        }
+      }
+      .game-box {
+        background: #fff;
+        border-radius: 28px;
+        padding: 16px;
+        width: min(94vw, 420px);
+        box-shadow:
+          0 10px 0 #f0d0e8,
+          0 6px 20px rgba(0, 0, 0, 0.08);
+      }
+      .info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .info-text {
+        color: #d63384;
+        font-weight: 800;
+        font-size: 15px;
+      }
+      .clicks {
+        background: #fff0f8;
+        color: #d63384;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-weight: 800;
+        font-size: 13px;
+      }
+      .top-letters {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 6px;
+        margin-bottom: 12px;
+        min-height: 200px;
+      }
+      .letter {
+        aspect-ratio: 1;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 800;
+        color: #fff;
+        cursor: pointer;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+        transition: all.2s;
+        user-select: none;
+      }
+      .letter:active {
+        transform: scale(0.94);
+      }
+      .letter.used {
+        opacity: 0.2;
+        transform: scale(0.8);
+        pointer-events: none;
+      }
+      .letter.wrong {
+        animation: shake.35s;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-4px);
+        }
+        75% {
+          transform: translateX(4px);
+        }
+      }
+      .bottom-area {
+        min-height: 84px;
+        background: #f0fff4;
+        border: 2px dashed #7ee89a;
+        border-radius: 16px;
+        padding: 8px;
+        display: grid;
+        grid-template-columns: repeat(9, 1fr);
+        gap: 4px;
+        align-content: start;
+      }
+      .bottom-area.empty::before {
+        content: "Tap A first...";
+        grid-column: 1/-1;
+        color: #a0d4b0;
+        font-weight: 700;
+        font-size: 14px;
+        text-align: center;
+        align-self: center;
+      }
+      .bottom-area.letter {
+        font-size: 16px;
+        cursor: default;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.1);
+        pointer-events: none;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+      .controls {
+        display: flex;
+        gap: 10px;
+        width: min(94vw, 420px);
+        margin-top: 14px;
+      }
+      .btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 16px;
+        font-family: "Baloo 2";
+        font-weight: 800;
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+        transition: 0.1s;
+      }
+      .btn:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+      }
+      .btn-pink {
+        background: #ff5fa2;
+        color: #fff;
+      }
+      .btn-white {
+        background: #fff;
+        color: #d63384;
+      }
+      .exit {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        width: 36px;
+        height: 36px;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: #d63384;
+        text-decoration: none;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+        font-weight: 800;
+      }
+      .popup {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+      }
+      .popup.show {
+        display: flex;
+        animation: fade.3s;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .card {
+        background: #fff;
+        border-radius: 28px;
+        padding: 30px 24px;
+        text-align: center;
+        max-width: 280px;
+        width: 100%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        animation: pop.4s cubic-bezier(0.2, 1.5, 0.5, 1);
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .stars {
+        font-size: 50px;
+        margin-bottom: 6px;
+        animation: bounce 1s ease infinite;
+      }
+      .card h2 {
+        font-size: 26px;
+        color: #d63384;
+        margin-bottom: 5px;
+      }
+      .card p {
+        color: #666;
+        font-size: 15px;
+        margin-bottom: 4px;
+      }
+      .card.score {
+        color: #d63384;
+        font-weight: 800;
+        font-size: 17px;
+        margin-bottom: 12px;
+      }
+      @media (max-height: 700px) {
+        .header {
+          margin-bottom: 8px;
+        }
+        .header h1 {
+          font-size: 22px;
+        }
+        .game-box {
+          padding: 12px;
+        }
+        .top-letters {
+          min-height: 170px;
+        }
+        .letter {
+          font-size: 18px;
+        }
+        .bottom-area {
+          min-height: 72px;
+        }
+        .controls {
+          margin-top: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#" class="exit" id="exitBtn">×</a>
+    <div class="header">
+      <span>🔤</span>
+      <h1>Tap in Order</h1>
+      <span style="animation-delay: 0.5s">🔤</span>
+    </div>
+    <div class="game-box">
+      <div class="info">
+        <div class="info-text">Arrange A → Z</div>
+        <div class="clicks">Clicks: <span id="clickCount">0</span></div>
+      </div>
+      <div class="top-letters" id="topLetters"></div>
+      <div class="bottom-area empty" id="bottomArea"></div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-pink" id="replayBtn">🔀 Replay</button
+      ><button class="btn btn-white" id="homeBtn">🏠 Home</button>
+    </div>
+    <div class="popup" id="popup">
+      <div class="card">
+        <div class="stars">🌟</div>
+        <h2>Perfect!</h2>
+        <p>You completed A-Z</p>
+        <div class="score" id="finalScore"></div>
+        <button
+          class="btn btn-pink"
+          onclick="
+            closePopup();
+            init();
+          "
+          style="width: 100%"
+        >
+          Play Again
+        </button>
+      </div>
+    </div>
+    <script>
+      const HOME_URL = "../games.html",
+        EXIT_URL = "../games.html";
+      const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+      const COLORS = [
+        "#ff6b6b",
+        "#4dabf7",
+        "#ffd43b",
+        "#51cf66",
+        "#9775fa",
+        "#ff922b",
+        "#f783ac",
+        "#20c997",
+        "#845ef7",
+        "#fd7e14",
+        "#e64980",
+        "#15aabf",
+        "#fab005",
+        "#82c91e",
+        "#7950f2",
+        "#ff6b6b",
+        "#4dabf7",
+        "#ffd43b",
+        "#51cf66",
+        "#9775fa",
+        "#ff922b",
+        "#f783ac",
+        "#20c997",
+        "#845ef7",
+        "#fd7e14",
+        "#e64980",
+      ];
+      let nextIndex = 0,
+        clicks = 0,
+        audio;
+      function ding() {
+        try {
+          audio = audio || new (window.AudioContext || webkitAudioContext)();
+          const o = audio.createOscillator(),
+            g = audio.createGain();
+          o.connect(g);
+          g.connect(audio.destination);
+          o.frequency.setValueAtTime(750, audio.currentTime);
+          o.frequency.exponentialRampToValueAtTime(
+            1050,
+            audio.currentTime + 0.09,
+          );
+          g.gain.setValueAtTime(0.15, audio.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.12);
+          o.start();
+          o.stop(audio.currentTime + 0.13);
+        } catch (e) {}
+      }
+      function buzz() {
+        try {
+          audio = audio || new (window.AudioContext || webkitAudioContext)();
+          const o = audio.createOscillator(),
+            g = audio.createGain();
+          o.connect(g);
+          g.connect(audio.destination);
+          o.type = "sawtooth";
+          o.frequency.value = 180;
+          g.gain.setValueAtTime(0.12, audio.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.15);
+          o.start();
+          o.stop(audio.currentTime + 0.16);
+        } catch (e) {}
+      }
+      function playWin() {
+        try {
+          audio = audio || new (window.AudioContext || webkitAudioContext)();
+          [523, 659, 784, 1046, 1318, 1568, 1318].forEach((f, i) =>
+            setTimeout(() => {
+              const o = audio.createOscillator(),
+                g = audio.createGain();
+              o.connect(g);
+              g.connect(audio.destination);
+              o.type = "triangle";
+              o.frequency.value = f;
+              g.gain.setValueAtTime(0.22, audio.currentTime);
+              g.gain.exponentialRampToValueAtTime(
+                0.001,
+                audio.currentTime + 0.19,
+              );
+              o.start();
+              o.stop(audio.currentTime + 0.2);
+            }, i * 110),
+          );
+        } catch (e) {}
+      }
+      function init() {
+        const top = document.getElementById("topLetters");
+        const bottom = document.getElementById("bottomArea");
+        top.innerHTML = "";
+        bottom.innerHTML = "";
+        bottom.classList.add("empty");
+        nextIndex = 0;
+        clicks = 0;
+        updateClicks();
+        [...LETTERS]
+          .sort(() => Math.random() - 0.5)
+          .forEach((l) => {
+            const d = document.createElement("div");
+            d.className = "letter";
+            d.dataset.letter = l;
+            d.textContent = l;
+            const color = COLORS[LETTERS.indexOf(l)];
+            d.style.background = color;
+            d.style.boxShadow = `0 4px 0 ${color}aa`;
+            d.onclick = () => handleClick(d);
+            top.appendChild(d);
+          });
+      }
+      function handleClick(el) {
+        clicks++;
+        updateClicks();
+        const letter = el.dataset.letter;
+        if (letter === LETTERS[nextIndex]) {
+          ding();
+          el.classList.add("used");
+          const bottom = document.getElementById("bottomArea");
+          bottom.classList.remove("empty");
+          // CREATE FULL-COLOR COPY FOR BOTTOM
+          const clone = document.createElement("div");
+          clone.className = "letter";
+          clone.textContent = letter;
+          const color = COLORS[LETTERS.indexOf(letter)];
+          clone.style.background = color;
+          clone.style.boxShadow = `0 2px 0 ${color}aa`;
+          bottom.appendChild(clone);
+          nextIndex++;
+          if (nextIndex === 26) {
+            setTimeout(() => {
+              document.getElementById("finalScore").textContent =
+                `Total clicks: ${clicks}`;
+              document.getElementById("popup").classList.add("show");
+              playWin();
+            }, 400);
+          }
+        } else {
+          buzz();
+          el.classList.add("wrong");
+          setTimeout(() => el.classList.remove("wrong"), 350);
+        }
+      }
+      function updateClicks() {
+        document.getElementById("clickCount").textContent = clicks;
+      }
+      function closePopup() {
+        document.getElementById("popup").classList.remove("show");
+      }
+      document.getElementById("replayBtn").onclick = init;
+      document.getElementById("homeBtn").onclick = () =>
+        (location.href = HOME_URL);
+      document.getElementById("exitBtn").onclick = (e) => {
+        e.preventDefault();
+        location.href = EXIT_URL;
+      };
+      init();
+    </script>
+  </body>
+</html>

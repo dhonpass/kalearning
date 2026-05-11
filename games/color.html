@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,user-scalable=no"
+    />
+    <title>Color Garden</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        font-family: "Baloo 2", cursive;
+        background: linear-gradient(135deg, #f8d7f0 0%, #e6d4f7 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 16px;
+      }
+
+      body {
+        font-family: "Baloo 2", "Noto Sans Tibetan", cursive;
+        background: linear-gradient(
+          180deg,
+          #fff7d6 0%,
+          #ffe4f1 30%,
+          #d6f0ff 70%,
+          #e0d4ff 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Floating colorful bubbles */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(
+            circle at 15% 20%,
+            rgba(255, 154, 0, 0.18) 0 120px,
+            transparent 121px
+          ),
+          radial-gradient(
+            circle at 85% 15%,
+            rgba(255, 90, 138, 0.18) 0 140px,
+            transparent 141px
+          ),
+          radial-gradient(
+            circle at 20% 85%,
+            rgba(46, 196, 182, 0.18) 0 160px,
+            transparent 161px
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(139, 92, 246, 0.16) 0 130px,
+            transparent 131px
+          ),
+          radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 207, 51, 0.12) 0 200px,
+            transparent 201px
+          );
+        animation: floatBubbles 25s ease-in-out infinite;
+        z-index: -2;
+        pointer-events: none;
+      }
+
+      /* Faint floating emojis */
+      body::after {
+        content: "🌈 ⭐ 🎈 🌸 🦋";
+        position: fixed;
+        top: 10%;
+        left: 0;
+        right: 0;
+        font-size: clamp(24px, 5vw, 40px);
+        opacity: 0.12;
+        display: flex;
+        justify-content: space-around;
+        animation: drift 30s linear infinite;
+        z-index: -1;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      @keyframes floatBubbles {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-30px) scale(1.05);
+        }
+      }
+      @keyframes drift {
+        0% {
+          transform: translateX(-10%);
+        }
+        100% {
+          transform: translateX(10%);
+        }
+      }
+
+      .header {
+        margin-top: 30px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .header h1 {
+        font-size: clamp(26px, 6vw, 36px);
+        color: #d63384;
+        font-weight: 800;
+      }
+      .header .balloon {
+        font-size: 28px;
+        animation: float 2s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-5px);
+        }
+      }
+      .game-box {
+        background: #fff;
+        border-radius: 32px;
+        padding: 28px 20px 24px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow:
+          0 12px 0 #f0d0e8,
+          0 8px 24px rgba(0, 0, 0, 0.08);
+      }
+      .balloons {
+        display: flex;
+        justify-content: center;
+        gap: 18px;
+        flex-wrap: wrap;
+        min-height: 140px;
+        align-items: flex-start;
+        margin-bottom: 24px;
+      }
+      .balloon-item {
+        width: 78px;
+        height: 95px;
+        cursor: grab;
+        touch-action: none;
+        position: relative;
+        animation: float2 3s ease-in-out infinite;
+        filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.12));
+      }
+      @keyframes float2 {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+      .balloon-item .face {
+        position: absolute;
+        top: 32%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 22px;
+      }
+      .balloon-item.dragging {
+        animation: none;
+        z-index: 999;
+        transform: scale(1.1);
+      }
+      .baskets {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        max-width: 300px;
+        margin: 0 auto;
+      }
+      .basket {
+        aspect-ratio: 1;
+        background: #fff;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        box-shadow: 0 5px 0 rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: 0.2s;
+        border: 3px solid transparent;
+        position: relative;
+      }
+      .basket::after {
+        content: "😊";
+        position: absolute;
+        bottom: 8px;
+        font-size: 18px;
+        opacity: 0.7;
+      }
+      .basket.glow {
+        transform: scale(1.08);
+        border-color: currentColor;
+      }
+      .basket.done {
+        opacity: 0.35;
+        transform: scale(0.92);
+      }
+      .controls {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        max-width: 420px;
+        margin-top: 20px;
+      }
+      .btn {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: 18px;
+        font-family: "Baloo 2";
+        font-weight: 800;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: 0 5px 0 rgba(0, 0, 0, 0.15);
+      }
+      .btn:active {
+        transform: translateY(3px);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+      }
+      .btn-pink {
+        background: #ff5fa2;
+        color: #fff;
+      }
+      .btn-white {
+        background: #fff;
+        color: #d63384;
+      }
+      .c1 {
+        background: #ffd43b;
+        color: #ffd43b;
+      }
+      .c2 {
+        background: #9775fa;
+        color: #9775fa;
+      }
+      .c3 {
+        background: #ff922b;
+        color: #ff922b;
+      }
+      .c4 {
+        background: #f783ac;
+        color: #f783ac;
+      }
+      .c5 {
+        background: #51cf66;
+        color: #51cf66;
+      }
+      .c6 {
+        background: #4dabf7;
+        color: #4dabf7;
+      }
+      .exit {
+        position: fixed !important; /* not absolute */
+        top: 12px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #d63384;
+        text-decoration: none;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        font-weight: 800;
+      }
+      .popup {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+      }
+      .popup.show {
+        display: flex;
+        animation: fade 0.3s;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .popup-card {
+        background: #fff;
+        border-radius: 32px;
+        padding: 40px 30px;
+        text-align: center;
+        max-width: 320px;
+        width: 100%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        animation: pop 0.4s cubic-bezier(0.2, 1.5, 0.5, 1);
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .popup-card .stars {
+        font-size: 64px;
+        margin-bottom: 12px;
+        animation: bounce 1s ease infinite;
+      }
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
+      .popup-card h2 {
+        font-size: 36px;
+        color: #d63384;
+        margin-bottom: 8px;
+      }
+      .popup-card p {
+        color: #666;
+        font-size: 20px;
+        margin-bottom: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="javascript:void(0)" class="exit" id="exitBtn">×</a>
+    <div class="header">
+      <span class="balloon">🎈</span>
+      <h1>Match the colour</h1>
+      <span class="balloon" style="animation-delay: 0.5s">🎈</span>
+    </div>
+    <div class="game-box">
+      <div class="balloons" id="balloons"></div>
+      <div class="baskets" id="baskets"></div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-pink" id="shuffleBtn">🔀 Shuffle</button
+      ><button class="btn btn-white" id="homeBtn">🏠 Home</button>
+    </div>
+    <div class="popup" id="popup">
+      <div class="popup-card">
+        <div class="stars">🌟</div>
+        <h2>Perfect!</h2>
+        <p>You matched all colors!</p>
+        <button
+          class="btn btn-pink"
+          onclick="
+            closePopup();
+            start();
+          "
+          style="width: 100%"
+        >
+          Play Again
+        </button>
+      </div>
+    </div>
+    <script>
+      // ===== EDIT YOUR LINKS HERE =====
+      const HOME_URL = "../games.html"; // use SAME path everywhere
+      const EXIT_URL = "../games.html"; // use SAME path everywhere
+      // ================================
+
+      document.getElementById("exitBtn").onclick = () =>
+        (window.location.href = EXIT_URL);
+      document.getElementById("homeBtn").onclick = () =>
+        (window.location.href = HOME_URL);
+      document.getElementById("shuffleBtn").onclick = start;
+      const COLORS = [
+        { n: "yellow", c: "#ffd43b", cls: "c1" },
+        { n: "purple", c: "#9775fa", cls: "c2" },
+        { n: "orange", c: "#ff922b", cls: "c3" },
+        { n: "pink", c: "#f783ac", cls: "c4" },
+        { n: "green", c: "#51cf66", cls: "c5" },
+        { n: "blue", c: "#4dabf7", cls: "c6" },
+      ];
+      let drag = null,
+        matched = 0,
+        audio;
+      function playSound() {
+        try {
+          audio = audio || new (window.AudioContext || webkitAudioContext)();
+          const o = audio.createOscillator(),
+            g = audio.createGain();
+          o.connect(g);
+          g.connect(audio.destination);
+          o.type = "sine";
+          o.frequency.setValueAtTime(800, audio.currentTime);
+          o.frequency.exponentialRampToValueAtTime(
+            1200,
+            audio.currentTime + 0.1,
+          );
+          g.gain.setValueAtTime(0.2, audio.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.15);
+          o.start();
+          o.stop(audio.currentTime + 0.16);
+        } catch (e) {}
+      }
+      const balloons = document.getElementById("balloons"),
+        baskets = document.getElementById("baskets");
+      function start() {
+        balloons.innerHTML = "";
+        baskets.innerHTML = "";
+        matched = 0;
+        [...COLORS]
+          .sort(() => Math.random() - 0.5)
+          .forEach((col) => {
+            const b = document.createElement("div");
+            b.className = "balloon-item";
+            b.dataset.color = col.n;
+            b.innerHTML = `<svg viewBox="0 0 80 95"><ellipse cx="40" cy="35" rx="32" ry="35" fill="${col.c}" stroke="#fff" stroke-width="2.5"/><path d="M40 70 Q37 78 40 88" stroke="${col.c}" stroke-width="2" fill="none"/></svg><div class="face">😊</div>`;
+            b.onpointerdown = dragStart;
+            balloons.appendChild(b);
+            const basket = document.createElement("div");
+            basket.className = `basket ${col.cls}`;
+            basket.dataset.color = col.n;
+            basket.innerHTML = "";
+            baskets.appendChild(basket);
+          });
+      }
+      function dragStart(e) {
+        drag = this;
+        const r = this.getBoundingClientRect();
+        this.style.position = "fixed";
+        this.style.left = r.left + "px";
+        this.style.top = r.top + "px";
+        this.style.width = r.width + "px";
+        this.style.zIndex = "999";
+        document.body.appendChild(this);
+        this.classList.add("dragging");
+        this.setPointerCapture(e.pointerId);
+        const ox = e.clientX - r.left,
+          oy = e.clientY - r.top;
+        const move = (ev) => {
+          drag.style.left = ev.clientX - ox + "px";
+          drag.style.top = ev.clientY - oy + "px";
+          drag.style.pointerEvents = "none";
+          const u = document.elementFromPoint(ev.clientX, ev.clientY);
+          drag.style.pointerEvents = "";
+          document
+            .querySelectorAll(".basket")
+            .forEach((b) => b.classList.remove("glow"));
+          const b = u?.closest(".basket");
+          if (b && b.dataset.color === drag.dataset.color)
+            b.classList.add("glow");
+        };
+        const up = (ev) => {
+          this.removeEventListener("pointermove", move);
+          this.removeEventListener("pointerup", up);
+          document
+            .querySelectorAll(".basket")
+            .forEach((b) => b.classList.remove("glow"));
+          this.style.pointerEvents = "none";
+          const u = document.elementFromPoint(ev.clientX, ev.clientY);
+          this.style.pointerEvents = "";
+          const b = u?.closest(".basket");
+          if (b && b.dataset.color === this.dataset.color) {
+            playSound();
+            b.classList.add("done");
+            this.style.transition = "all .3s";
+            const br = b.getBoundingClientRect();
+            this.style.left =
+              br.left + br.width / 2 - this.offsetWidth / 2 + "px";
+            this.style.top =
+              br.top + br.height / 2 - this.offsetHeight / 2 + "px";
+            this.style.transform = "scale(0)";
+            setTimeout(() => this.remove(), 300);
+            if (++matched === 6)
+              setTimeout(
+                () => document.getElementById("popup").classList.add("show"),
+                400,
+              );
+          } else {
+            this.style.transition = "all .3s";
+            this.style.left = "";
+            this.style.top = "";
+            this.style.position = "";
+            this.style.width = "";
+            this.style.zIndex = "";
+            this.classList.remove("dragging");
+            balloons.appendChild(this);
+            setTimeout(() => (this.style.transition = ""), 300);
+          }
+          drag = null;
+        };
+        this.addEventListener("pointermove", move);
+        this.addEventListener("pointerup", up);
+      }
+      function closePopup() {
+        document.getElementById("popup").classList.remove("show");
+      }
+      document.getElementById("shuffleBtn").onclick = start;
+      document.getElementById("homeBtn").onclick = () =>
+        (location.href = HOME_URL);
+      document.getElementById("exitBtn").onclick = (e) => {
+        e.preventDefault();
+        location.href = EXIT_URL;
+      };
+      start();
+    </script>
+  </body>
+</html>

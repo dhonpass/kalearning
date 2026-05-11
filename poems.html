@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kalearning - Poems</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Nunito:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ===== BASE (same as index) ===== */
+      :root {
+        --primary: #ff5a8a;
+        --teal: #2ec4b6;
+        --bg: #f8faff;
+        --text: #2d3748;
+        --radius: 24px;
+        --shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Nunito", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        position: relative; /* add this */
+      }
+
+      /* === BACKGROUND IMAGE AT 50% === */
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url("images/ui/bgg.png"); /* ← replace this */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 50%; /* 50% transparent */
+        z-index: -1; /* stays behind everything */
+        pointer-events: none;
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: "Fredoka", sans-serif;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      nav {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem 1.5rem;
+        position: relative;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 1.3rem;
+        color: var(--text);
+        text-decoration: none;
+      }
+      .logo img {
+        height: 32px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+        list-style: none;
+        align-items: center;
+      }
+      .nav-links a {
+        text-decoration: none;
+        color: var(--text);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: 0.2s;
+        display: block;
+      }
+      .nav-links a.active,
+      .nav-links a:hover {
+        background: var(--primary);
+        color: #fff;
+      }
+      .nav-toggle {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 8px;
+      }
+      .hamburger {
+        width: 24px;
+        height: 18px;
+        position: relative;
+        display: block;
+      }
+      .hamburger span {
+        display: block;
+        height: 3px;
+        width: 100%;
+        background: var(--text);
+        border-radius: 2px;
+        position: absolute;
+        left: 0;
+        transition: 0.3s;
+      }
+      .hamburger span:nth-child(1) {
+        top: 0;
+      }
+      .hamburger span:nth-child(2) {
+        top: 7.5px;
+      }
+      .hamburger span:nth-child(3) {
+        bottom: 0;
+      }
+      .nav-toggle.active .hamburger span:nth-child(1) {
+        transform: rotate(45deg);
+        top: 7.5px;
+      }
+      .nav-toggle.active .hamburger span:nth-child(2) {
+        opacity: 0;
+      }
+      .nav-toggle.active .hamburger span:nth-child(3) {
+        transform: rotate(-45deg);
+        bottom: 7.5px;
+      }
+      @media (max-width: 1024px) {
+        .nav-toggle {
+          display: block;
+        }
+        .nav-links {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: #fff;
+          flex-direction: column;
+          gap: 0;
+          padding: 0.5rem 1.5rem 1rem;
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+          border-top: 1px solid #f1f5f9;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-10px);
+          transition: 0.25s;
+          pointer-events: none;
+        }
+        .nav-links.open {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+          pointer-events: auto;
+        }
+        .nav-links li {
+          width: 100%;
+        }
+        .nav-links a {
+          padding: 0.8rem 1rem;
+          width: 100%;
+          border-radius: 8px;
+          margin: 0.2rem 0;
+        }
+      }
+      .section {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 4rem 1.5rem;
+      }
+      h2 {
+        text-align: center;
+        font-size: 2.4rem;
+        margin-bottom: 0.5rem;
+        color: #ff5a8a; /* <-- add this */
+      }
+      .subtitle {
+        text-align: center;
+        color: #64748b;
+        margin-bottom: 2rem;
+      }
+      .site-footer {
+        background: #fff;
+        padding: 2rem 1rem 1.5rem;
+        text-align: center;
+        margin-top: auto;
+        border-top: 4px solid #ff5a8a;
+      }
+      .social {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 0.8rem;
+      }
+      .social a {
+        width: 42px;
+        height: 42px;
+        background: #fff0f5;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        border: 2px solid #ff5a8a;
+      }
+      .social a:nth-child(2) {
+        background: #e6fffa;
+        border-color: #2ec4b6;
+      }
+      .social a:nth-child(3) {
+        background: #fff4e6;
+        border-color: #ff9f43;
+      }
+      .social img {
+        width: 22px;
+        height: 22px;
+      }
+      .footer-text {
+        color: #5a6473;
+        font-size: 0.95rem;
+      }
+
+      /* ===== POEMS SPECIFIC ===== */
+      .audio-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+        gap: 1.8rem;
+        margin-top: 2rem;
+      }
+      .audio-card {
+        background: #fff;
+        border-radius: 24px;
+        padding: 1rem; /* was 1.5rem */
+        box-shadow: var(--shadow);
+        text-align: center;
+        border-top: 6px solid var(--accent);
+        transition: transform 0.2s;
+      }
+      .audio-card:hover {
+        transform: translateY(-4px);
+      }
+      .audio-image {
+        width: 100%;
+        aspect-ratio: 16/8; /* was 1/1 - THIS IS THE KEY */
+        background: linear-gradient(135deg, #fff7f9, #f0f9ff);
+        border-radius: 14px; /* slightly smaller */
+        overflow: hidden;
+        margin-bottom: 0.7rem; /* was 1rem */
+        display: grid;
+        place-items: center;
+      }
+      .audio-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .placeholder {
+        font-size: 3.5rem;
+        opacity: 0.25;
+      }
+      .audio-card h3 {
+        margin: 0.2rem 0 0.5rem; /* tighter */
+        color: var(--accent);
+        font-size: 1.15rem; /* was 1.25rem */
+      }
+      .controls .time {
+        flex-shrink: 0; /* add this if you have a .time span */
+        font-size: 0.85rem;
+        white-space: nowrap;
+      }
+      .play-btn {
+        width: 48px;
+        height: 48px;
+        min-width: 48px; /* ← prevents squeeze */
+        min-height: 48px;
+        flex: 0 0 auto; /* ← don't grow, don't shrink */
+        aspect-ratio: 1/1; /* ← force perfect circle */
+        border-radius: 50%;
+        border: none;
+        background: var(--accent);
+        color: #fff;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+        display: grid;
+        place-items: center; /* centers the ▶ icon */
+      }
+      .progress {
+        flex: 1;
+        height: 9px;
+        -webkit-appearance: none;
+        background: #e2e8f0;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .progress::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 15px;
+        height: 15px;
+        background: var(--accent);
+        border-radius: 50%;
+        border: 2px solid #fff;
+      }
+      .time {
+        font-size: 0.85rem;
+        color: #64748b;
+        min-width: 75px;
+        text-align: right;
+      }
+      .bg-shapes {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        overflow: hidden;
+      }
+      .shape {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        opacity: 0.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-shapes">
+      <div
+        class="shape"
+        style="
+          width: 300px;
+          height: 300px;
+
+          top: -50px;
+          left: -50px;
+        "
+      ></div>
+      <div
+        class="shape"
+        style="
+          width: 250px;
+          height: 250px;
+
+          bottom: -30px;
+          right: -30px;
+        "
+      ></div>
+    </div>
+
+    <header>
+      <nav>
+        <a href="index.html" class="logo"
+          ><img
+            src="images/ui/alphabet.png"
+            alt="Logo"
+            onerror="this.style.display = 'none'"
+          />Kalearning</a
+        >
+        <button class="nav-toggle" id="navToggle">
+          <span class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="subjects.html">Subjects</a></li>
+          <li><a href="poems.html" class="active">Poems 🎶</a></li>
+          <li><a href="story.html">Story</a></li>
+          <li><a href="games.html">Games</a></li>
+          <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>
+      <section class="section">
+        <h2>🎵 Tibetan Poems & Rhymes</h2>
+        <p class="subtitle">Tap play to listen and sing along</p>
+
+        <div class="audio-grid">
+          <!-- ==================== PLAYER 1 ==================== -->
+          <div class="audio-card" style="--accent: #ff6b9d">
+            <div class="audio-image">
+              <!-- TODO: Replace with your image -->
+              <img
+                src="images/ui/nationalAnthem.png"
+                alt="Poem 1"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>⭐</div>'
+                "
+              />
+            </div>
+            <h3>🌟 TIBETAN NATIONAL ANTHEM 🌟</h3>
+            <!-- TODO: Replace with your MP3 -->
+            <audio
+              id="audio1"
+              preload="metadata"
+              src="audio/poems/National-Anthem.mp3"
+            ></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button>
+              <input
+                type="range"
+                class="progress"
+                value="0"
+                min="0"
+                max="100"
+              />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <!-- ==================== PLAYER 2 ==================== -->
+          <div class="audio-card" style="--accent: #a78bfa">
+            <div class="audio-image">
+              <img
+                src="images/ui/alphabetSong.png"
+                alt="Poem 2"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>🌈</div>'
+                "
+              />
+            </div>
+            <h3>Tibetan Alphabet Song</h3>
+            <audio
+              id="audio2"
+              preload="metadata"
+              src="audio/poems/alphabet.mp3"
+            ></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button>
+              <input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <!-- ==================== PLAYER 3 ==================== -->
+          <div class="audio-card" style="--accent: #4ecdc4">
+            <div class="audio-image">
+              <img
+                src="images/ui/colorSong.png"
+                alt="Poem 3"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>🌱</div>'
+                "
+              />
+            </div>
+            <h3>Colour Song</h3>
+            <audio
+              id="audio3"
+              preload="metadata"
+              src="audio/poems/colour.mp3"
+            ></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button>
+              <input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <!-- ==================== PLAYER 4 ==================== -->
+          <div class="audio-card" style="--accent: #ffd166">
+            <div class="audio-image">
+              <img
+                src="images/ui/poem1.png"
+                alt="Poem 4"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>🎵</div>'
+                "
+              />
+            </div>
+            <h3>Happy Song</h3>
+            <audio
+              id="audio4"
+              preload="metadata"
+              src="audio/poems/chickNumber.mp3"
+            ></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button>
+              <input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <!-- ==================== PLAYER 5 ==================== -->
+          <div class="audio-card" style="--accent: #5b9aff">
+            <div class="audio-image">
+              <img
+                src="images/ui/Agunyma.png"
+                alt="Poem 5"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>🦄</div>'
+                "
+              />
+            </div>
+            <h3>Aku Nyima Song</h3>
+            <audio
+              id="audio5"
+              preload="metadata"
+              src="audio/poems/AguNyima.mp3"
+            ></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button>
+              <input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <!-- ==================== PLAYER 6 ==================== -->
+          <div class="audio-card" style="--accent: #ff8a65">
+            <div class="audio-image">
+              <img
+                src="images/ui/jumpingMonkey.png"
+                alt="Poem 6"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>🚀</div>'
+                "
+              />
+            </div>
+            <h3>Jumping Monkey</h3>
+            <audio
+              id="audio6"
+              preload="metadata"
+              src="audio/poems/monkey.mp3"
+            ></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button>
+              <input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <!-- ==================== PLAYER 7 to 12 (copy pattern) ==================== -->
+          <div class="audio-card" style="--accent: #7ed957">
+            <div class="audio-image">
+              <img
+                src="images/ui/labudabu.png"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>🐻</div>'
+                "
+              />
+            </div>
+            <h3>Lhabu Dhabu</h3>
+            <audio id="audio7" src="audio/poems/LhabuDabu.mp3"></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button
+              ><input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <div class="audio-card" style="--accent: #ba68c8">
+            <div class="audio-image">
+              <img
+                src="images/ui/padaka.png"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>🦊</div>'
+                "
+              />
+            </div>
+            <h3>Pa Dawa</h3>
+            <audio id="audio8" src="audio/poems/PaDaga.mp3"></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button
+              ><input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <div class="audio-card" style="--accent: #4dd0e1">
+            <div class="audio-image">
+              <img
+                src="images/ui/redee.png"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>🌙</div>'
+                "
+              />
+            </div>
+            <h3>Ree De Galey Shu</h3>
+            <audio id="audio9" src="audio/poems/RiDi.mp3"></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button
+              ><input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <div class="audio-card" style="--accent: #f06292">
+            <div class="audio-image">
+              <img
+                src="images/ui/fourSeason.png"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>☀️</div>'
+                "
+              />
+            </div>
+            <h3>Four Season Song</h3>
+            <audio id="audio10" src="audio/poems/fourSeason.mp3"></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button
+              ><input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <div class="audio-card" style="--accent: #9575cd">
+            <div class="audio-image">
+              <img
+                src="images/ui/month.png"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>🎨</div>'
+                "
+              />
+            </div>
+            <h3>12 Month Song</h3>
+            <audio id="audio11" src="audio/poems/monthSong.mp3"></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button
+              ><input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+
+          <div class="audio-card" style="--accent: #ffb74d">
+            <div class="audio-image">
+              <img
+                src="images/ui/nala.png"
+                onerror="
+                  this.parentNode.innerHTML = '<div class=placeholder>📚</div>'
+                "
+              />
+            </div>
+            <h3>Namla Garee Du</h3>
+            <audio id="audio12" src="audio/poems/Namla.wav"></audio>
+            <div class="controls">
+              <button class="play-btn">▶️</button
+              ><input type="range" class="progress" value="0" />
+              <div class="time">0:00 / 0:00</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <div class="social">
+        <a href="https://www.instagram.com/ka_learning/?hl=en" target="_blank"
+          ><img src="images/ui/insta.png" alt="Instagram"
+        /></a>
+        <a href="https://www.facebook.com/KaLearning" target="_blank"
+          ><img src="images/ui/facebook.png" alt="Facebook"
+        /></a>
+        <a href="https://www.youtube.com/@dhonpass" target="_blank"
+          ><img src="images/ui/youtube.png" alt="YouTube"
+        /></a>
+      </div>
+      <div class="footer-text">
+        Made with ❤️ for curious kids • © 2026 Kalearning
+      </div>
+    </footer>
+
+    <script>
+      const navToggle = document.getElementById("navToggle");
+      const navLinks = document.getElementById("navLinks");
+      navToggle.onclick = () => {
+        navToggle.classList.toggle("active");
+        navLinks.classList.toggle("open");
+      };
+      function setupAudio(id) {
+        const a = document.getElementById(id);
+        if (!a) return;
+        const c = a.closest(".audio-card"),
+          b = c.querySelector(".play-btn"),
+          p = c.querySelector(".progress"),
+          t = c.querySelector(".time");
+        b.onclick = () => {
+          if (a.paused) {
+            document.querySelectorAll("audio").forEach((x) => {
+              if (x !== a) {
+                x.pause();
+                x
+                  .closest(".audio-card")
+                  .querySelector(".play-btn").textContent = "▶️";
+              }
+            });
+            a.play();
+            b.textContent = "⏸️";
+          } else {
+            a.pause();
+            b.textContent = "▶️";
+          }
+        };
+        a.ontimeupdate = () => {
+          if (a.duration) {
+            p.value = (a.currentTime / a.duration) * 100;
+            const C = Math.floor(a.currentTime),
+              D = Math.floor(a.duration);
+            t.textContent = `${Math.floor(C / 60)}:${String(C % 60).padStart(2, "0")} / ${Math.floor(D / 60)}:${String(D % 60).padStart(2, "0")}`;
+          }
+        };
+        a.onended = () => {
+          b.textContent = "▶️";
+          p.value = 0;
+        };
+        p.oninput = () => {
+          if (a.duration) a.currentTime = (p.value / 100) * a.duration;
+        };
+      }
+      for (let i = 1; i <= 12; i++) setupAudio("audio" + i);
+    </script>
+  </body>
+</html>

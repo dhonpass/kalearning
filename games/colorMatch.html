@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,user-scalable=no"
+    />
+    <title>Color Match Game</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        font-family: "Baloo 2", cursive;
+        background: linear-gradient(135deg, #fff5f9 0%, #f0f9ff 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      body {
+        font-family: "Baloo 2", "Noto Sans Tibetan", cursive;
+        background: linear-gradient(
+          180deg,
+          #fff7d6 0%,
+          #ffe4f1 30%,
+          #d6f0ff 70%,
+          #e0d4ff 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Floating colorful bubbles */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(
+            circle at 15% 20%,
+            rgba(255, 154, 0, 0.18) 0 120px,
+            transparent 121px
+          ),
+          radial-gradient(
+            circle at 85% 15%,
+            rgba(255, 90, 138, 0.18) 0 140px,
+            transparent 141px
+          ),
+          radial-gradient(
+            circle at 20% 85%,
+            rgba(46, 196, 182, 0.18) 0 160px,
+            transparent 161px
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(139, 92, 246, 0.16) 0 130px,
+            transparent 131px
+          ),
+          radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 207, 51, 0.12) 0 200px,
+            transparent 201px
+          );
+        animation: floatBubbles 25s ease-in-out infinite;
+        z-index: -2;
+        pointer-events: none;
+      }
+
+      /* Faint floating emojis */
+      body::after {
+        content: "🌈 ⭐ 🎈 🌸 🦋";
+        position: fixed;
+        top: 10%;
+        left: 0;
+        right: 0;
+        font-size: clamp(24px, 5vw, 40px);
+        opacity: 0.12;
+        display: flex;
+        justify-content: space-around;
+        animation: drift 30s linear infinite;
+        z-index: -1;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      @keyframes floatBubbles {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-30px) scale(1.05);
+        }
+      }
+      @keyframes drift {
+        0% {
+          transform: translateX(-10%);
+        }
+        100% {
+          transform: translateX(10%);
+        }
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .header h1 {
+        font-size: 26px;
+        background: linear-gradient(90deg, #ff5fa2, #7c3aed);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+      }
+      .header span {
+        font-size: 22px;
+      }
+
+      .game-box {
+        background: #fff;
+        border-radius: 28px;
+        padding: 28px 20px;
+        width: min(92vw, 380px);
+        box-shadow:
+          0 12px 0 #ffe4f1,
+          0 8px 24px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .color-square {
+        width: 140px;
+        height: 140px;
+        border-radius: 24px;
+        box-shadow:
+          0 8px 0 rgba(0, 0, 0, 0.12),
+          inset 0 -4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 28px;
+        transition: transform.2s;
+      }
+      .color-square.shake {
+        animation: shake.45s;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        20% {
+          transform: translateX(-8px);
+        }
+        40% {
+          transform: translateX(8px);
+        }
+        60% {
+          transform: translateX(-6px);
+        }
+        80% {
+          transform: translateX(6px);
+        }
+      }
+      .color-square.pop {
+        animation: pop.3s;
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0.9);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        width: 100%;
+      }
+      .option {
+        padding: 14px;
+        border: none;
+        border-radius: 16px;
+        background: #fff0f8;
+        font-family: "Baloo 2";
+        font-weight: 800;
+        font-size: 17px;
+        color: #d63384;
+        cursor: pointer;
+        box-shadow: 0 4px 0 #f0d0e8;
+        transition: 0.1s;
+        text-transform: lowercase;
+      }
+      .option:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 #f0d0e8;
+      }
+      .option.correct {
+        background: #e8fff0;
+        color: #16a34a;
+        box-shadow: 0 4px 0 #bbf7d0;
+      }
+      .option.wrong {
+        background: #ffe4e6;
+        color: #dc2626;
+        box-shadow: 0 4px 0 #fecdd3;
+      }
+
+      .stats {
+        display: flex;
+        gap: 12px;
+        width: min(92vw, 380px);
+        margin-top: 16px;
+      }
+      .stat {
+        flex: 1;
+        background: #fff;
+        padding: 10px;
+        border-radius: 14px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        font-weight: 800;
+        color: #7c3aed;
+        font-size: 14px;
+      }
+      .stat span {
+        color: #ff5fa2;
+        font-size: 18px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        width: min(92vw, 380px);
+        margin-top: 12px;
+      }
+      .btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 16px;
+        font-family: "Baloo 2";
+        font-weight: 800;
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+        transition: 0.1s;
+      }
+      .btn:active {
+        transform: translateY(2px);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+      }
+      .btn-pink {
+        background: #ff5fa2;
+        color: #fff;
+      }
+      .btn-white {
+        background: #fff;
+        color: #7c3aed;
+      }
+
+      .exit {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        width: 38px;
+        height: 38px;
+        background: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: #ff5fa2;
+        text-decoration: none;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+        font-weight: 800;
+        z-index: 100;
+      }
+
+      .popup {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+      }
+      .popup.show {
+        display: flex;
+        animation: fade.3s;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .card {
+        background: #fff;
+        border-radius: 28px;
+        padding: 32px 26px;
+        text-align: center;
+        max-width: 300px;
+        width: 100%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        animation: pop2.4s cubic-bezier(0.2, 1.5, 0.5, 1);
+      }
+      @keyframes pop2 {
+        0% {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .stars {
+        font-size: 54px;
+        margin-bottom: 8px;
+      }
+      .card h2 {
+        font-size: 28px;
+        background: linear-gradient(90deg, #ff5fa2, #7c3aed);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 6px;
+      }
+      .card p {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 4px;
+      }
+      .card.final {
+        color: #7c3aed;
+        font-weight: 800;
+        font-size: 18px;
+        margin: 8px 0 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#" class="exit" id="exitBtn">×</a>
+
+    <div class="header">
+      <span>🎨</span>
+      <h1>Color Match Name</h1>
+    </div>
+
+    <div class="game-box">
+      <div class="color-square" id="colorSquare"></div>
+      <div class="options" id="options"></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">Round<br /><span id="roundNum">1</span>/10</div>
+      <div class="stat">Score<br /><span id="scoreNum">0</span></div>
+      <div class="stat">Attempts<br /><span id="attemptNum">0</span></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-pink" id="replayBtn">🔀 Replay</button>
+      <button class="btn btn-white" id="homeBtn">🏠 Home</button>
+    </div>
+
+    <div class="popup" id="popup">
+      <div class="card">
+        <div class="stars">🏆</div>
+        <h2>Great Job!</h2>
+        <p>You matched all colors</p>
+        <div class="final" id="finalStats"></div>
+        <button
+          class="btn btn-pink"
+          onclick="
+            closePopup();
+            init();
+          "
+          style="width: 100%"
+        >
+          Play Again
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // ===== EDIT THESE =====
+      const HOME_URL = "../games.html";
+      const EXIT_URL = "../games.html";
+      // ======================
+
+      const COLORS = [
+        { name: "དམར་པོ།", hex: "#ef4444" },
+        { name: "སྔོན་པོ།", hex: "#3b82f6" },
+        { name: "སྔོ་ལྗང་།", hex: "#22c55e" },
+        { name: "སེར་པོ།", hex: "#eab308" },
+        { name: "orange", hex: "#f97316" },
+        { name: "purple", hex: "#a855f7" },
+        { name: "pink", hex: "#ec4899" },
+        { name: "brown", hex: "#92400e" },
+        { name: "black", hex: "#1f2937" },
+        { name: "gray", hex: "#6b7280" },
+        { name: "cyan", hex: "#06b6d4" },
+        { name: "lime", hex: "#84cc16" },
+      ];
+
+      let round = 0,
+        score = 0,
+        attempts = 0,
+        currentColor,
+        audio;
+      const TOTAL_ROUNDS = 10;
+
+      function ding() {
+        try {
+          audio = audio || new (window.AudioContext || webkitAudioContext)();
+          const o = audio.createOscillator(),
+            g = audio.createGain();
+          o.connect(g);
+          g.connect(audio.destination);
+          o.frequency.setValueAtTime(800, audio.currentTime);
+          o.frequency.exponentialRampToValueAtTime(
+            1200,
+            audio.currentTime + 0.08,
+          );
+          g.gain.setValueAtTime(0.15, audio.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.11);
+          o.start();
+          o.stop(audio.currentTime + 0.12);
+        } catch (e) {}
+      }
+      function buzz() {
+        try {
+          audio = audio || new (window.AudioContext || webkitAudioContext)();
+          const o = audio.createOscillator(),
+            g = audio.createGain();
+          o.connect(g);
+          g.connect(audio.destination);
+          o.type = "sawtooth";
+          o.frequency.value = 160;
+          g.gain.setValueAtTime(0.14, audio.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.18);
+          o.start();
+          o.stop(audio.currentTime + 0.19);
+        } catch (e) {}
+      }
+      function winSound() {
+        try {
+          audio = audio || new (window.AudioContext || webkitAudioContext)();
+          [523, 659, 784, 1046, 1318].forEach((f, i) =>
+            setTimeout(() => {
+              const o = audio.createOscillator(),
+                g = audio.createGain();
+              o.connect(g);
+              g.connect(audio.destination);
+              o.type = "triangle";
+              o.frequency.value = f;
+              g.gain.setValueAtTime(0.2, audio.currentTime);
+              g.gain.exponentialRampToValueAtTime(
+                0.001,
+                audio.currentTime + 0.2,
+              );
+              o.start();
+              o.stop(audio.currentTime + 0.21);
+            }, i * 120),
+          );
+        } catch (e) {}
+      }
+
+      function init() {
+        round = 0;
+        score = 0;
+        attempts = 0;
+        updateStats();
+        nextRound();
+      }
+
+      function nextRound() {
+        if (round >= TOTAL_ROUNDS) {
+          document.getElementById("finalStats").textContent =
+            `Score: ${score}/10 • Attempts: ${attempts}`;
+          document.getElementById("popup").classList.add("show");
+          winSound();
+          return;
+        }
+        round++;
+        updateStats();
+
+        // pick random color
+        currentColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+        const square = document.getElementById("colorSquare");
+        square.style.background = currentColor.hex;
+        square.classList.remove("shake");
+        void square.offsetWidth;
+        square.classList.add("pop");
+
+        // create 4 options
+        const options = [currentColor];
+        while (options.length < 4) {
+          const c = COLORS[Math.floor(Math.random() * COLORS.length)];
+          if (!options.find((o) => o.name === c.name)) options.push(c);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        options.forEach((opt) => {
+          const btn = document.createElement("button");
+          btn.className = "option";
+          btn.textContent = opt.name;
+          btn.onclick = () => checkAnswer(opt, btn);
+          optionsDiv.appendChild(btn);
+        });
+      }
+
+      function checkAnswer(selected, btn) {
+        attempts++;
+        updateStats();
+
+        if (selected.name === currentColor.name) {
+          ding();
+          btn.classList.add("correct");
+          score++;
+          updateStats();
+          document
+            .querySelectorAll(".option")
+            .forEach((b) => (b.disabled = true));
+          setTimeout(nextRound, 600);
+        } else {
+          buzz();
+          btn.classList.add("wrong");
+          document.getElementById("colorSquare").classList.add("shake");
+          setTimeout(() => btn.classList.remove("wrong"), 500);
+        }
+      }
+
+      function updateStats() {
+        document.getElementById("roundNum").textContent = round;
+        document.getElementById("scoreNum").textContent = score;
+        document.getElementById("attemptNum").textContent = attempts;
+      }
+
+      function closePopup() {
+        document.getElementById("popup").classList.remove("show");
+      }
+      document.getElementById("replayBtn").onclick = init;
+      document.getElementById("homeBtn").onclick = () =>
+        (location.href = HOME_URL);
+      document.getElementById("exitBtn").onclick = (e) => {
+        e.preventDefault();
+        location.href = EXIT_URL;
+      };
+
+      init();
+    </script>
+  </body>
+</html>

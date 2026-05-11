@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,user-scalable=no"
+    />
+    <title>Shape Match</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        font-family: "Baloo 2", cursive;
+        background: linear-gradient(135deg, #f9d6eb, #e9d5ff);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px;
+      }
+
+      body {
+        font-family: "Baloo 2", "Noto Sans Tibetan", cursive;
+        background: linear-gradient(
+          180deg,
+          #fff7d6 0%,
+          #ffe4f1 30%,
+          #d6f0ff 70%,
+          #e0d4ff 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Floating colorful bubbles */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(
+            circle at 15% 20%,
+            rgba(255, 154, 0, 0.18) 0 120px,
+            transparent 121px
+          ),
+          radial-gradient(
+            circle at 85% 15%,
+            rgba(255, 90, 138, 0.18) 0 140px,
+            transparent 141px
+          ),
+          radial-gradient(
+            circle at 20% 85%,
+            rgba(46, 196, 182, 0.18) 0 160px,
+            transparent 161px
+          ),
+          radial-gradient(
+            circle at 80% 80%,
+            rgba(139, 92, 246, 0.16) 0 130px,
+            transparent 131px
+          ),
+          radial-gradient(
+            circle at 50% 50%,
+            rgba(255, 207, 51, 0.12) 0 200px,
+            transparent 201px
+          );
+        animation: floatBubbles 25s ease-in-out infinite;
+        z-index: -2;
+        pointer-events: none;
+      }
+
+      /* Faint floating emojis */
+      body::after {
+        content: "🌈 ⭐ 🎈 🌸 🦋";
+        position: fixed;
+        top: 10%;
+        left: 0;
+        right: 0;
+        font-size: clamp(24px, 5vw, 40px);
+        opacity: 0.12;
+        display: flex;
+        justify-content: space-around;
+        animation: drift 30s linear infinite;
+        z-index: -1;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      @keyframes floatBubbles {
+        0%,
+        100% {
+          transform: translateY(0) scale(1);
+        }
+        50% {
+          transform: translateY(-30px) scale(1.05);
+        }
+      }
+      @keyframes drift {
+        0% {
+          transform: translateX(-10%);
+        }
+        100% {
+          transform: translateX(10%);
+        }
+      }
+
+      h1 {
+        font-size: clamp(28px, 8vw, 36px); /* RESPONSIVE */
+        color: #c2185b;
+        text-align: center;
+        margin: 30px 0;
+        text-shadow: 0 2px 0 #fff;
+      }
+      .stats {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .stat {
+        background: #fff;
+        padding: 6px 14px;
+        border-radius: 14px;
+        font-weight: 700;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        font-size: clamp(13px, 3.5vw, 15px);
+      }
+      .tray {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(8px, 2.5vw, 12px); /* RESPONSIVE */
+        width: 100%;
+        max-width: min(92vw, 420px);
+        margin-bottom: 18px;
+        min-height: clamp(140px, 40vw, 180px);
+      }
+      .shape {
+        width: 100%;
+        aspect-ratio: 1; /* RESPONSIVE */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        touch-action: none;
+        filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.15));
+        animation: float 3s ease-in-out infinite;
+      }
+      .shape svg {
+        width: 88%;
+        height: 88%;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-6px);
+        }
+      }
+      .shape.drag {
+        animation: none;
+        z-index: 9999 !important;
+        transform: scale(1.1);
+      }
+
+      .board {
+        background: #fff;
+        border-radius: 28px;
+        padding: clamp(14px, 4vw, 20px);
+        width: 100%;
+        max-width: min(92vw, 420px);
+        box-shadow: 0 10px 0 #f0d0e8;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(8px, 2.5vw, 12px);
+      }
+      .slot {
+        aspect-ratio: 1;
+        background: #faf5ff;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        transition: 0.25s;
+        border: 3px solid transparent;
+      }
+      .slot .ghost {
+        width: 55%;
+        height: 55%;
+        color: #e9dff5;
+        opacity: 0.8;
+      }
+      .slot .ghost svg {
+        width: 100%;
+        height: 100%;
+      }
+      .slot.hover {
+        border-color: #ff7eb8;
+        background: #fff0f8;
+        transform: scale(1.05);
+      }
+      .slot.done {
+        background: #e8ffe8;
+        border-color: #7ee89a;
+      }
+      .slot.done .ghost {
+        opacity: 0;
+      }
+      .slot .shape {
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 68% !important;
+        height: 68% !important;
+        filter: none !important;
+        animation: none !important;
+        cursor: default;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        width: 100%;
+        max-width: min(92vw, 420px);
+        margin-top: 18px;
+      }
+      .abtn {
+        flex: 1;
+        padding: clamp(12px, 3.5vw, 14px);
+        border: none;
+        border-radius: 18px;
+        font-family: "Baloo 2";
+        font-weight: 800;
+        font-size: clamp(16px, 4vw, 18px);
+        cursor: pointer;
+        box-shadow: 0 5px 0 rgba(0, 0, 0, 0.15);
+        transition: 0.1s;
+      }
+      .abtn:active {
+        transform: translateY(3px);
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+      }
+      .pink {
+        background: #ff5fa2;
+        color: #fff;
+      }
+      .white {
+        background: #fff;
+        color: #d63384;
+      }
+
+      /* POPUP - unchanged */
+      .popup {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+      }
+      .popup.show {
+        display: flex;
+        animation: fade 0.3s;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      .card {
+        background: #fff;
+        border-radius: 32px;
+        padding: 32px 26px;
+        text-align: center;
+        max-width: 320px;
+        width: 100%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        animation: pop 0.4s cubic-bezier(0.2, 1.5, 0.5, 1);
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      .emoji {
+        font-size: 56px;
+        line-height: 1;
+        margin-bottom: 10px;
+        animation: bounce 1s infinite;
+      }
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Shape Match</h1>
+    <div class="stats">
+      <div class="stat">Moves: <span id="mv">0</span></div>
+      <div class="stat">Time: <span id="tm">0</span>s</div>
+    </div>
+
+    <div class="tray" id="tray"></div>
+    <div class="board" id="board"></div>
+
+    <div class="actions">
+      <button class="abtn pink" onclick="start()">🔀 Shuffle</button>
+      <button class="abtn white" onclick="location.href = '../games.html'">
+        🏠 Home
+      </button>
+    </div>
+
+    <div class="popup" id="win">
+      <div class="card">
+        <div class="emoji">🎉</div>
+        <h2 style="color: #c2185b; margin-bottom: 8px">You Win!</h2>
+        <p style="color: #666; margin-bottom: 16px">
+          Moves: <b id="wm">0</b> • Time: <b id="wt">0</b>s
+        </p>
+        <button
+          class="abtn pink"
+          onclick="
+            closeWin();
+            start();
+          "
+          style="width: 100%"
+        >
+          Play Again
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const SHAPES = [
+        {
+          i: "star",
+          c: "#f472b6",
+          p: "M50 15 L61 38 L86 38 L66 53 L73 77 L50 63 L27 77 L34 53 L14 38 L39 38 Z",
+        },
+        {
+          i: "pentagon",
+          c: "#a855f7",
+          p: "M50 12 L85 36 L72 82 L28 82 L15 36 Z",
+        },
+        {
+          i: "hexagon",
+          c: "#14b8a6",
+          p: "M50 10 L82 28 L82 72 L50 90 L18 72 L18 28 Z",
+        },
+        { i: "triangle", c: "#f59e0b", p: "M50 16 L84 78 L16 78 Z" },
+        { i: "circle", c: "#eab308", p: "M50 12 A38 38 0 1 1 49.9 12 Z" },
+        {
+          i: "heart",
+          c: "#ec4899",
+          p: "M50 75 C32 60,16 48,16 34 C16 24,24 18,34 18 C42 18,48 23,50 30 C52 23,58 18,66 18 C76 18,84 24,84 34 C84 48,68 60,50 75 Z",
+        },
+        { id: "diamond", c: "#3b82f6", p: "M50 12 L86 50 L50 88 L14 50 Z" },
+        { id: "square", c: "#f97316", p: "M18 18 H82 V82 H18 Z" },
+      ].map((s) => ({ id: s.i || s.id, color: s.c, svg: s.p }));
+
+      let moves = 0,
+        time = 0,
+        timer,
+        drag = null,
+        audio;
+      function beep() {
+        try {
+          audio = audio || new AudioContext();
+          const o = audio.createOscillator(),
+            g = audio.createGain();
+          o.connect(g);
+          g.connect(audio.destination);
+          o.frequency.value = 800;
+          g.gain.setValueAtTime(0.12, audio.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.15);
+          o.start();
+          o.stop(audio.currentTime + 0.16);
+        } catch (e) {}
+      }
+
+      function start() {
+        document.getElementById("tray").innerHTML = "";
+        document.getElementById("board").innerHTML = "";
+        moves = 0;
+        time = 0;
+        document.getElementById("mv").textContent = 0;
+        document.getElementById("tm").textContent = 0;
+        clearInterval(timer);
+        timer = setInterval(
+          () => (document.getElementById("tm").textContent = ++time),
+          1000,
+        );
+        const a = [...SHAPES].sort(() => Math.random() - 0.5);
+        a.forEach((s) => {
+          const d = document.createElement("div");
+          d.className = "shape";
+          d.dataset.id = s.id;
+          d.innerHTML = `<svg viewBox="0 0 100 100"><path d="${s.svg}" fill="${s.color}"/></svg>`;
+          d.onpointerdown = down;
+          document.getElementById("tray").appendChild(d);
+        });
+        [...SHAPES]
+          .sort(() => Math.random() - 0.5)
+          .forEach((s) => {
+            const sl = document.createElement("div");
+            sl.className = "slot";
+            sl.dataset.id = s.id;
+            sl.innerHTML = `<div class="ghost"><svg viewBox="0 0 100 100"><path d="${s.svg}" fill="currentColor"/></svg></div>`;
+            document.getElementById("board").appendChild(sl);
+          });
+      }
+      function down(e) {
+        drag = this;
+        const r = this.getBoundingClientRect();
+        this.style.position = "fixed";
+        this.style.left = r.left + "px";
+        this.style.top = r.top + "px";
+        this.style.width = r.width + "px";
+        this.style.height = r.height + "px";
+        this.style.zIndex = "9999";
+        document.body.appendChild(this);
+        this.classList.add("drag");
+        this.setPointerCapture(e.pointerId);
+        const ox = e.clientX - r.left,
+          oy = e.clientY - r.top;
+        const mv = (ev) => {
+          drag.style.left = ev.clientX - ox + "px";
+          drag.style.top = ev.clientY - oy + "px";
+          drag.style.pointerEvents = "none";
+          const u = document.elementFromPoint(ev.clientX, ev.clientY);
+          drag.style.pointerEvents = "";
+          document
+            .querySelectorAll(".slot")
+            .forEach((x) => x.classList.remove("hover"));
+          const sl = u?.closest(".slot");
+          if (
+            sl &&
+            !sl.classList.contains("done") &&
+            sl.dataset.id === drag.dataset.id
+          )
+            sl.classList.add("hover");
+        };
+        const up = (ev) => {
+          this.removeEventListener("pointermove", mv);
+          this.removeEventListener("pointerup", up);
+          document
+            .querySelectorAll(".slot")
+            .forEach((x) => x.classList.remove("hover"));
+          this.style.pointerEvents = "none";
+          const u = document.elementFromPoint(ev.clientX, ev.clientY);
+          this.style.pointerEvents = "";
+          const sl = u?.closest(".slot");
+          const ok =
+            sl &&
+            !sl.classList.contains("done") &&
+            sl.dataset.id === this.dataset.id;
+          if (ok) {
+            sl.classList.add("done");
+            sl.appendChild(this);
+            this.style.position = "absolute";
+            this.style.left = "50%";
+            this.style.top = "50%";
+            this.style.transform = "translate(-50%,-50%)";
+            this.style.width = "68%";
+            this.style.height = "68%";
+            this.style.zIndex = "";
+            this.classList.remove("drag");
+            beep();
+            document.getElementById("mv").textContent = ++moves;
+            if (document.querySelectorAll(".slot.done").length === 8)
+              setTimeout(win, 400);
+          } else {
+            this.classList.remove("drag");
+            this.removeAttribute("style");
+            document.getElementById("tray").appendChild(this);
+          }
+          drag = null;
+        };
+        this.addEventListener("pointermove", mv);
+        this.addEventListener("pointerup", up);
+      }
+      function win() {
+        clearInterval(timer);
+        document.getElementById("wm").textContent = moves;
+        document.getElementById("wt").textContent = time;
+        document.getElementById("win").classList.add("show");
+      }
+      function closeWin() {
+        document.getElementById("win").classList.remove("show");
+      }
+      start();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kalearning</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Nunito:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #ff5a8a;
+        --teal: #2ec4b6;
+        --bg: #f8faff;
+        --text: #2d3748;
+        --radius: 24px;
+        --shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Nunito", sans-serif;
+        background: #f8faff;
+        color: var(--text);
+        line-height: 1.6;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("images/ui/bgg.png");
+        background-size: cover;
+        background-position: center;
+        opacity: 70%;
+        z-index: -1;
+        pointer-events: none;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: "Fredoka", sans-serif;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      nav {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem 1.5rem;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 1.3rem;
+        color: var(--text);
+        text-decoration: none;
+      }
+      .logo img {
+        height: 32px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 0.5rem;
+        list-style: none;
+        align-items: center;
+      }
+      .nav-links a {
+        text-decoration: none;
+        color: var(--text);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: block;
+      }
+      .nav-links a.active,
+      .nav-links a:hover {
+        background: var(--primary);
+        color: white;
+      }
+      .nav-toggle {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+      }
+
+      .ai-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3b90ff, #00d9ff);
+        color: white;
+        border: none;
+        font-family: "Fredoka";
+        font-size: 0.85rem;
+        cursor: pointer;
+        box-shadow: 0 3px 10px rgba(59, 130, 246, 0.3);
+        display: grid;
+        place-items: center;
+        transition: transform 0.15s;
+      }
+      .ai-circle:hover {
+        transform: scale(1.08);
+      }
+      .ai-desktop {
+        list-style: none;
+        margin-right: 0.3rem;
+      }
+      .ai-mobile {
+        display: none;
+        margin-right: 0.6rem;
+      }
+      @media (max-width: 1024px) {
+        .ai-desktop {
+          display: none;
+        }
+        .ai-mobile {
+          display: grid;
+        }
+      }
+      .ai-popup .popup {
+        margin-top: 28px;
+
+        max-width: 920px;
+        width: 96%;
+        padding: 0;
+        overflow: visible !important;
+        background: transparent;
+        border-radius: 24px;
+        position: relative;
+      }
+      .ai-popup iframe {
+        scrollbar-width: none !important;
+
+        width: 100%;
+        height: 85vh;
+        border: none;
+        display: block;
+        border-radius: 24px;
+        overflow: hidden;
+        background: #0b1020;
+        scrollbar-width: none;
+      }
+      .ai-popup iframe::-webkit-scrollbar {
+        display: none;
+      }
+      .ai-close {
+        display: none !important;
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: translate(30%, -30%);
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 24px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        z-index: 10;
+        line-height: 1;
+      }
+
+      .hamburger {
+        width: 24px;
+        height: 18px;
+        position: relative;
+        display: block;
+      }
+      .hamburger span {
+        display: block;
+        height: 3px;
+        width: 100%;
+        background: var(--text);
+        border-radius: 2px;
+        position: absolute;
+        left: 0;
+        transition: 0.3s;
+      }
+      .hamburger span:nth-child(1) {
+        top: 0;
+      }
+      .hamburger span:nth-child(2) {
+        top: 7.5px;
+      }
+      .hamburger span:nth-child(3) {
+        bottom: 0;
+      }
+
+      .nav-toggle.active .hamburger span:nth-child(1) {
+        transform: rotate(45deg);
+        top: 7.5px;
+      }
+      .nav-toggle.active .hamburger span:nth-child(2) {
+        opacity: 0;
+      }
+      .nav-toggle.active .hamburger span:nth-child(3) {
+        transform: rotate(-45deg);
+        bottom: 7.5px;
+      }
+
+      /* === MOBILE MENU - LEFT ALIGNED LIKE YOUR SCREENSHOT === */
+      @media (max-width: 1024px) {
+        .nav-toggle {
+          display: block;
+        }
+        .nav-links {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0;
+          padding: 0.6rem 0 1rem;
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-8px);
+          transition: 0.25s ease;
+          border-bottom: 1px solid #f0f0f0;
+          z-index: 999;
+        }
+        .nav-links.open {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+        .nav-links li {
+          width: 100%;
+        }
+        .nav-links a {
+          display: block;
+          width: calc(100% - 24px);
+          margin: 4px 12px;
+          padding: 0.85rem 1rem;
+          border-radius: 10px;
+          text-align: left;
+          font-weight: 500;
+          color: #334155;
+          background: transparent;
+        }
+        .nav-links a.active {
+          background: var(--primary) !important;
+          color: white !important;
+          font-weight: 600;
+        }
+      }
+      @media (max-width: 1024px) and (hover: hover) {
+        .nav-links a:hover {
+          background: #fff0f5;
+        }
+      }
+
+      .hero {
+        color: rgb(66, 66, 66);
+      }
+      .hero-inner {
+        max-width: 1150px;
+        margin: 0 auto;
+        padding: 4.5rem 1.5rem;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 3rem;
+        align-items: center;
+      }
+      .hero h1 {
+        font-size: 2.8rem;
+        line-height: 1.15;
+        margin-bottom: 2.5rem;
+        color: #ff5a8a;
+      }
+      .points {
+        list-style: none;
+        margin: 0 0 2rem 0;
+      }
+      .points li {
+        display: flex;
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+        font-size: 1.05rem;
+      }
+      .points li::before {
+        content: "✓";
+        background: #fabad2;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .btns {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .btn {
+        padding: 0.9rem 1.8rem;
+        border-radius: 20px;
+        font-weight: 700;
+        text-decoration: none;
+        font-family: "Fredoka";
+        display: inline-block;
+      }
+      .btn-donate {
+        background: #2ec4b6;
+        color: #fff;
+      }
+      .btn-app {
+        background: var(--teal);
+        color: white;
+      }
+      .hero-img {
+        text-align: center;
+      }
+
+      .about {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+      }
+      .about-card {
+        background: #f4fff7;
+        border-radius: 32px;
+        padding: 3.5rem 2.5rem;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(75, 57, 57, 0.12);
+      }
+      .about-card h2 {
+        font-size: 2.4rem;
+        background: #ff3a7c;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+      }
+      .lead {
+        font-size: 1.15rem;
+        color: #9d174d;
+        font-weight: 600;
+        max-width: 700px;
+        margin: 0 auto 1.5rem;
+      }
+      .about-card p {
+        color: #5a2a3e;
+        max-width: 750px;
+        text-align: justify;
+        margin: 0 auto 1rem;
+      }
+
+      .donate-sec {
+        max-width: 900px;
+        margin: 4rem auto 5rem;
+        padding: 0 1.5rem;
+      }
+      .donate-card {
+        background: #d3ffc3;
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        text-align: center;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      }
+      .donate-card h2 {
+        color: #f74a37;
+        font-size: 2.1rem;
+        margin-bottom: 0.8rem;
+      }
+
+      footer {
+        background: #fff;
+        padding: 2rem 1rem;
+        text-align: center;
+        border-top: 4px solid var(--primary);
+        margin-top: 3rem;
+      }
+      .social {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 0.8rem;
+      }
+      .social a {
+        width: 42px;
+        height: 42px;
+        background: #fff0f5;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        border: 2px solid var(--primary);
+      }
+      .social img {
+        width: 22px;
+        height: 22px;
+      }
+
+      .popup-overlay {
+        overscroll-behavior: contain;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: 0.25s;
+      }
+      .popup-overlay.show {
+        opacity: 1;
+        visibility: visible;
+      }
+      .popup {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 340px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      }
+      .popup h3 {
+        font-family: "Fredoka";
+        color: #d11950;
+        margin-bottom: 0.8rem;
+      }
+      .popup button {
+        margin-top: 1rem;
+        padding: 0.6rem 1.4rem;
+        border: none;
+        background: #ff5a8a;
+        color: white;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      @media (max-width: 900px) {
+        .hero-inner {
+          grid-template-columns: 1fr;
+          text-align: center;
+          padding: 3rem 1.5rem;
+        }
+        .hero h1 {
+          font-size: 2.2rem;
+        }
+        .points li {
+          justify-content: flex-start;
+          text-align: left;
+          max-width: 340px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .btns {
+          justify-content: center;
+        }
+        .hero-img {
+          margin-top: 1.5rem;
+        }
+      }
+
+      /* Hide all scrollbars globally when modal open */
+      html,
+      body {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+      }
+      .popup-overlay.show {
+        overflow: hidden;
+      }
+
+      .ai-close-top {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        border: none;
+        font-size: 22px;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 10px rgba(255, 90, 138, 0.3);
+        margin-right: 0.4rem;
+      }
+      .ai-close-top.show {
+        display: flex;
+      }
+      .ai-circle.hide {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="index.html" class="logo"
+          ><img src="images/ui/alphabet.png" alt="" /> Kalearning</a
+        >
+        <ul class="nav-links" id="navLinks">
+          <li class="ai-desktop">
+            <button class="ai-circle" onclick="openAI()" title="AI Assistant">
+              AI
+            </button>
+          </li>
+          <li><a href="index.html" class="active">Home 🏡</a></li>
+          <li><a href="subjects.html">Subjects</a></li>
+          <li><a href="poems.html">Poems</a></li>
+          <li><a href="story.html">Story</a></li>
+          <li><a href="games.html">Games</a></li>
+          <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+        <button
+          class="ai-circle ai-mobile"
+          onclick="openAI()"
+          title="AI Assistant"
+        >
+          AI
+        </button>
+        <button
+          class="nav-toggle"
+          id="navToggle"
+          aria-label="Toggle navigation"
+        >
+          <span class="hamburger"><span></span><span></span><span></span></span>
+        </button>
+      </nav>
+    </header>
+
+    <div class="hero">
+      <div class="hero-inner">
+        <div>
+          <h1>Welcome to Kalearning. Learn, Play & Grow! 🚀</h1>
+          <ul class="points">
+            <li>Learn Tibetan alphabet through our fun, game-based platform</li>
+            <li>Build problem-solving skills using interactive stories</li>
+            <li>
+              Accelerate language development by letting kids do what they love
+            </li>
+          </ul>
+          <div class="btns">
+            <a
+              href="#"
+              class="btn btn-donate"
+              onclick="
+                openDonate();
+                return false;
+              "
+              >Donate</a
+            >
+            <a
+              href="#"
+              class="btn btn-app"
+              onclick="
+                openApp();
+                return false;
+              "
+              >Download App</a
+            >
+          </div>
+        </div>
+        <div class="hero-img">
+          <img
+            src="images/ui/homesc.png"
+            alt=""
+            style="max-width: 480px; width: 100%; height: auto"
+            onerror="this.style.display = 'none'"
+          />
+        </div>
+      </div>
+    </div>
+
+    <section class="about">
+      <div class="about-card">
+        <h2>💙 About Us</h2>
+        <p class="lead">
+          Kalearning is made with love for children under 10. We believe
+          learning should be colorful, playful, and safe.
+        </p>
+        <p>
+          We are dedicated to creating meaningful learning experiences for
+          children through technology. Our mission is to make learning simple,
+          engaging, and culturally meaningful for young learners. This project
+          was started by Ka Learning Team in 2014. The positive response from
+          parents inspired us to build educational apps that help children learn
+          language, culture, and basic knowledge in a fun way.
+        </p>
+        <p>
+          The GOAL of Ka Learning is to make learning joyful for children while
+          helping them connect with their language and culture. With a
+          child-friendly design and interactive style, it encourages young
+          learners to explore Tibetan letters step by step playfully.
+        </p>
+      </div>
+    </section>
+
+    <section class="donate-sec">
+      <div class="donate-card">
+        <h2>🌱 Help Us Grow</h2>
+        <p>
+          Kalearning is free for every child. Your donation helps us create
+          better lessons, new games, and more beautiful content.
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="social">
+        <a href="https://www.instagram.com/ka_learning/" target="_blank"
+          ><img src="images/ui/insta.png" alt="Instagram" /></a
+        ><a href="https://www.facebook.com/KaLearning" target="_blank"
+          ><img src="images/ui/facebook.png" alt="Facebook" /></a
+        ><a href="https://www.youtube.com/@dhonpass" target="_blank"
+          ><img src="images/ui/youtube.png" alt="YouTube"
+        /></a>
+      </div>
+      <div>Made with ❤️ for curious kids • © 2026 Kalearning</div>
+    </footer>
+
+    <script>
+      const t = document.getElementById("navToggle"),
+        l = document.getElementById("navLinks");
+      t.addEventListener("click", () => {
+        t.classList.toggle("active");
+        l.classList.toggle("open");
+      });
+    </script>
+
+    <div id="donatePopup" class="popup-overlay" onclick="closeDonate()">
+      <div class="popup" onclick="event.stopPropagation()">
+        <h3>Support Kalearning ❤️</h3>
+        <p>Scan to donate</p>
+        <img
+          src="images/ui/qrcode.png"
+          alt="QR"
+          style="width: 180px; margin: 1rem auto; display: block"
+          onerror="this.style.display = 'none'"
+        /><button onclick="closeDonate()">Close</button>
+      </div>
+    </div>
+
+    <div id="appPopup" class="popup-overlay" onclick="closeApp()">
+      <div class="popup" onclick="event.stopPropagation()">
+        <h3>Download Kalearning App 📱</h3>
+        <p>Sorry for inconvenience</p>
+        <img
+          src="images/ui/mylogo.png"
+          alt="App QR"
+          style="
+            width: 180px;
+            height: 180px;
+            margin: 1rem auto;
+            display: block;
+            border-radius: 12px;
+            background: #f8fafc;
+          "
+          onerror="this.style.display = 'none'"
+        />
+        <p style="font-size: 0.85rem; color: #888">
+          Kalearning App is coming soon.....
+        </p>
+        <div
+          style="
+            display: flex;
+            gap: 0.6rem;
+            justify-content: center;
+            margin-top: 0.8rem;
+          "
+        >
+          <a
+            href="https://play.google.com"
+            target="_blank"
+            style="
+              padding: 0.5rem 1rem;
+              background: #2ec4b6;
+              color: white;
+              border-radius: 8px;
+              text-decoration: none;
+              font-weight: 600;
+              font-size: 0.9rem;
+            "
+            >Play Store</a
+          ><a
+            href="https://apps.apple.com"
+            target="_blank"
+            style="
+              padding: 0.5rem 1rem;
+              background: #ff5a8a;
+              color: white;
+              border-radius: 8px;
+              text-decoration: none;
+              font-weight: 600;
+              font-size: 0.9rem;
+            "
+            >App Store</a
+          >
+        </div>
+        <button onclick="closeApp()">Close</button>
+      </div>
+    </div>
+
+    <div id="aiPopup" class="popup-overlay ai-popup" onclick="closeAI()">
+      <div
+        class="popup"
+        onclick="event.stopPropagation()"
+        style="position: relative"
+      >
+        <button class="ai-close" onclick="closeAI()">×</button
+        ><iframe src="ai.html" title="AI Assistant"></iframe>
+      </div>
+    </div>
+
+    <script>
+      function openDonate() {
+        document.getElementById("donatePopup").classList.add("show");
+      }
+      function closeDonate() {
+        document.getElementById("donatePopup").classList.remove("show");
+      }
+      function openApp() {
+        document.getElementById("appPopup").classList.add("show");
+      }
+      function closeApp() {
+        document.getElementById("appPopup").classList.remove("show");
+      }
+      function openAI() {
+        document.getElementById("aiPopup").classList.add("show");
+        document.body.style.overflow = "hidden";
+        document.getElementById("aiCloseTop")?.classList.add("show");
+        document.getElementById("aiOpenBtn")?.classList.add("hide");
+        document.getElementById("aiCloseTopM")?.classList.add("show");
+        document.getElementById("aiOpenBtnM")?.classList.add("hide");
+      }
+      function closeAI() {
+        document.getElementById("aiPopup").classList.remove("show");
+        document.body.style.overflow = "";
+        document.getElementById("aiCloseTop")?.classList.remove("show");
+        document.getElementById("aiOpenBtn")?.classList.remove("hide");
+        document.getElementById("aiCloseTopM")?.classList.remove("show");
+        document.getElementById("aiOpenBtnM")?.classList.remove("hide");
+      }
+    </script>
+  </body>
+</html>

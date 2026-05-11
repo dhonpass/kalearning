@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Story Theater - Kalearning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #ff5a8a;
+        --teal: #2ec4b6;
+        --bg: #f8faff;
+        --text: #2d3748;
+        --radius: 24px;
+        --shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #0f1229;
+        color: #1e293b;
+        line-height: 1.5;
+        padding-top: 68px;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      /* Header */
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: #cbdcf7;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        /* NO border-bottom here */
+      }
+      nav {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem 1.5rem;
+        position: relative;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 1.3rem;
+        color: var(--text);
+        text-decoration: none;
+      }
+      .logo img {
+        height: 32px;
+      }
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+        list-style: none;
+        align-items: center;
+      }
+      .nav-links a {
+        text-decoration: none;
+        color: var(--text);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: block;
+      }
+      .nav-links a.active,
+      .nav-links a:hover {
+        background: var(--primary);
+        color: rgb(255, 255, 255);
+      }
+
+      /* Hamburger */
+      .nav-toggle {
+        display: none;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 8px;
+      }
+      .nav-toggle:hover {
+        background: #f1f5f9;
+      }
+      .hamburger {
+        width: 24px;
+        height: 18px;
+        position: relative;
+        display: block;
+      }
+      .hamburger span {
+        display: block;
+        height: 3px;
+        width: 100%;
+        background: var(--text);
+        border-radius: 2px;
+        position: absolute;
+        left: 0;
+        transition: all 0.3s;
+      }
+      .hamburger span:nth-child(1) {
+        top: 0;
+      }
+      .hamburger span:nth-child(2) {
+        top: 7.5px;
+      }
+      .hamburger span:nth-child(3) {
+        bottom: 0;
+      }
+      .nav-toggle.active .hamburger span:nth-child(1) {
+        transform: rotate(45deg);
+        top: 7.5px;
+      }
+      .nav-toggle.active .hamburger span:nth-child(2) {
+        opacity: 0;
+      }
+      .nav-toggle.active .hamburger span:nth-child(3) {
+        transform: rotate(-45deg);
+        bottom: 7.5px;
+      }
+
+      @media (max-width: 1024px) {
+        .nav-toggle {
+          display: block;
+        }
+        .nav-links {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          flex-direction: column;
+          gap: 0;
+          padding: 0.5rem 1.5rem 1rem;
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+          border-top: 1px solid #f1f5f9;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-10px);
+          transition: all 0.25s ease;
+          pointer-events: none;
+        }
+        .nav-links.open {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+          pointer-events: auto;
+        }
+        .nav-links li {
+          width: 100%;
+        }
+        .nav-links a {
+          padding: 0.8rem 1rem;
+          width: 100%;
+          border-radius: 8px;
+          margin: 0.2rem 0;
+        }
+      }
+
+      /* Main Theater */
+      .theater {
+        background: linear-gradient(180deg, #1a1f3a 0%, #2d1b4e 100%);
+        min-height: calc(100vh - 68px);
+        padding: 2.5rem 1rem 4rem;
+      }
+      .theater-header {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+      .theater-header h1 {
+        font-family: Fredoka, sans-serif;
+        font-weight: 700;
+        font-size: clamp(2.2rem, 5vw, 3.2rem);
+        color: #ff5a8a;
+        letter-spacing: 0.3px;
+      }
+      .theater-header p {
+        color: #cbd5e1;
+        font-size: 1.1rem;
+        margin-top: 0.4rem;
+      }
+
+      .stories-grid {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+        padding: 2rem;
+      }
+
+      .story-card {
+        background: white;
+        border-radius: 28px;
+        overflow: hidden;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+        transition: transform 0.2s;
+        position: relative;
+        border: 3px solid transparent;
+      }
+      .story-card:hover {
+        transform: translateY(-4px);
+      }
+
+      .card-image {
+        position: relative;
+        height: 280px;
+        width: 100%;
+        overflow: hidden;
+        background: #0f1229;
+      }
+      .card-image img {
+        height: 280px;
+        width: 100%;
+        object-fit: cover;
+        position: relative;
+        display: block;
+      }
+      .card-title {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+        color: white;
+        padding: 1.5rem 1rem 1rem;
+        font-family: Fredoka, sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .card-controls {
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #f8fafc;
+      }
+      .btn-replay,
+      .btn-play {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        flex-shrink: 0;
+        transition:
+          transform 0.15s,
+          filter 0.15s;
+      }
+      .btn-replay {
+        background: white;
+        border: 2px solid var(--accent);
+        color: var(--accent);
+      }
+      .btn-play {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+      .btn-replay:hover,
+      .btn-play:hover {
+        transform: scale(1.06);
+      }
+      .btn-replay:active,
+      .btn-play:active {
+        transform: scale(0.94);
+      }
+
+      .progress {
+        flex: 1;
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 3px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        background: var(--accent);
+        width: 0%;
+        border-radius: 3px;
+        transition: width 0.1s linear;
+      }
+
+      .time {
+        font-size: 0.8rem;
+        color: #64748b;
+        white-space: nowrap;
+        min-width: 70px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* RGB Border when playing */
+      .story-card.playing {
+        border: 3px solid transparent;
+        background:
+          linear-gradient(white, white) padding-box,
+          linear-gradient(
+              90deg,
+              #ff0000,
+              #ff8000,
+              #ffff00,
+              #00ff00,
+              #00ffff,
+              #0000ff,
+              #ff00ff,
+              #ff0000
+            )
+            border-box;
+        background-size: 300% 300%;
+        animation: rgbBorder 2s linear infinite;
+      }
+      @keyframes rgbBorder {
+        0% {
+          background-position: 0% 50%;
+        }
+        100% {
+          background-position: 300% 50%;
+        }
+      }
+
+      /* Footer */
+      .site-footer {
+        background: white;
+        border-top: 4px solid #ff5a8a;
+        padding: 2rem 1rem;
+        text-align: center;
+      }
+      .social {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 0.8rem;
+      }
+      .social a {
+        width: 42px;
+        height: 42px;
+        background: #fff0f5;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        border: 2px solid #ff5a8a;
+        transition: transform 0.2s;
+      }
+      .social a:nth-child(2) {
+        background: #e6fffa;
+        border-color: #2ec4b6;
+      }
+      .social a:nth-child(3) {
+        background: #fff4e6;
+        border-color: #ff9f43;
+      }
+      .social a:hover {
+        transform: translateY(-3px);
+      }
+      .social a img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+      }
+      .footer-text {
+        color: #64748b;
+        font-size: 0.92rem;
+      }
+
+      @media (max-width: 1024px) {
+        .hamburger {
+          display: block;
+        }
+        .nav-links {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          flex-direction: column;
+          gap: 0;
+          padding: 0.6rem 0 1rem;
+          box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+          display: none;
+        }
+        .nav-links.open {
+          display: flex;
+        }
+        .nav-links li {
+          width: 100%;
+          padding: 0 1rem; /* ← creates the side inset like Index */
+        }
+        .nav-links a {
+          display: block;
+          padding: 0.85rem 1rem;
+          text-align: left; /* ← was center */
+          border-radius: 8px; /* ← gives the pill shape */
+          margin: 0.15rem 0; /* ← stops the pink backgrounds overlapping */
+        }
+        .nav-links a:hover,
+        .nav-links a.active {
+          background: #ff5a8a;
+          color: white;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="index.html" class="logo">
+          <img
+            src="images/ui/alphabet.png"
+            alt="Logo"
+            onerror="this.style.display = 'none'"
+          />
+          Kalearning
+        </a>
+        <button
+          class="nav-toggle"
+          id="navToggle"
+          aria-label="Toggle navigation"
+        >
+          <span class="hamburger"><span></span><span></span><span></span></span>
+        </button>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="subjects.html">Subjects </a></li>
+          <li><a href="poems.html">Poems</a></li>
+          <li><a href="story.html" class="active">Story 🌙</a></li>
+          <li><a href="games.html">Games</a></li>
+          <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="theater">
+      <div class="theater-header">
+        <h1>🌙 Tibetan Bedtime Stories</h1>
+        <p>Cozy Tibetan tales to listen and dream</p>
+      </div>
+
+      <div class="stories-grid">
+        <!-------------------------------------------------------------------------------- 1 -->
+        <div class="story-card" style="--accent: #ff6b6b">
+          <div class="card-image">
+            <img
+              src="images/ui/blindMan.png"
+              alt="4 Blind Men and an Elephant"
+            />
+            <div class="card-title">4 Blind Men and an Elephant</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 1:14</span
+            ><audio
+              preload="metadata"
+              src="audio/story/4_blind_men.mp3"
+            ></audio>
+          </div>
+        </div>
+        <!-- -------------------------------------------------------------------------------2 -->
+        <div class="story-card" style="--accent: #8b5cf6">
+          <div class="card-image">
+            <img src="images/ui/babyhorse.png" alt="Tibetan Alphabet Song" />
+            <div class="card-title">Baby horse is swimming in the river</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 2:30</span
+            ><audio preload="metadata" src="audio/story/Baby-horse.mp3"></audio>
+          </div>
+        </div>
+        <!------------------------------------------------------------------------------------ 3 -->
+        <div class="story-card" style="--accent: #06b6d4">
+          <div class="card-image">
+            <img src="images/ui/bunnylion.png" alt="Color Song" />
+            <div class="card-title">Bunny and The Lion</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 1:45</span
+            ><audio preload="metadata" src="audio/story/bunny-lion.mp3"></audio>
+          </div>
+        </div>
+        <!-------------------------------------------------------------------------------------- 4 -->
+        <div class="story-card" style="--accent: #f59e0b">
+          <div class="card-image">
+            <img src="images/ui/rabbittood.png" alt="Happy Poems" />
+            <div class="card-title">Happy Poems</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 2:10</span
+            ><audio
+              preload="metadata"
+              src="audio/story/Bunny-Turtle-Race.mp3"
+            ></audio>
+          </div>
+        </div>
+        <!------------------------------------------------------------------------------------------ 5 -->
+        <div class="story-card" style="--accent: #ec4899">
+          <div class="card-image">
+            <img src="images/ui/foxcrow.png" alt="Aku Nyima" />
+            <div class="card-title">Aku Nyima</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 3:20</span
+            ><audio
+              preload="metadata"
+              src="audio/story/Crow-mother-lost-her-meat-fox.mp3"
+            ></audio>
+          </div>
+        </div>
+        <!-- ------------------------------------------------------------------------------------6 -->
+        <div class="story-card" style="--accent: #10b981">
+          <div class="card-image">
+            <img src="images/ui/fourfriends.png" alt="Jumping Monkey" />
+            <div class="card-title">Jumping Monkey</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 1:55</span
+            ><audio
+              preload="metadata"
+              src="audio/story/Four-harmonious-friends.mp3"
+            ></audio>
+          </div>
+        </div>
+
+        <!-- ------------------------------------------------------------------------------------6 -->
+        <div class="story-card" style="--accent: #10b981">
+          <div class="card-image">
+            <img src="images/ui/greedymarchen.png" alt="Jumping Monkey" />
+            <div class="card-title">The Greedy Merchant</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 1:55</span
+            ><audio
+              preload="metadata"
+              src="audio/story/Greedy-Merchant.mp3"
+            ></audio>
+          </div>
+        </div>
+
+        <!-- ------------------------------------------------------------------------------------6 -->
+        <div class="story-card" style="--accent: #10b981">
+          <div class="card-image">
+            <img src="images/ui/kingcrow.png" alt="Jumping Monkey" />
+            <div class="card-title">The King Owl and The King Crow</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 1:55</span
+            ><audio
+              preload="metadata"
+              src="audio/story/King-Owl-King-Crow.mp3"
+            ></audio>
+          </div>
+        </div>
+
+        <!-- ------------------------------------------------------------------------------------6 -->
+        <div class="story-card" style="--accent: #10b981">
+          <div class="card-image">
+            <img src="images/ui/lionFamily.png" alt="Jumping Monkey" />
+            <div class="card-title">The Lion Family</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 1:55</span
+            ><audio
+              preload="metadata"
+              src="audio/story/lion-family.mp3"
+            ></audio>
+          </div>
+        </div>
+
+        <!-- ------------------------------------------------------------------------------------6 -->
+        <div class="story-card" style="--accent: #10b981">
+          <div class="card-image">
+            <img src="images/ui/otherbefore.png" alt="Jumping Monkey" />
+            <div class="card-title">Jumping Monkey</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 1:55</span
+            ><audio
+              preload="metadata"
+              src="audio/story/Others-before-self.mp3"
+            ></audio>
+          </div>
+        </div>
+
+        <!-- ------------------------------------------------------------------------------------6 -->
+        <div class="story-card" style="--accent: #10b981">
+          <div class="card-image">
+            <img src="images/ui/sandalwood.png" alt="Jumping Monkey" />
+            <div class="card-title">Sandal Wood Sellers</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 1:55</span
+            ><audio
+              preload="metadata"
+              src="audio/story/Sandal-wood-seller.mp3"
+            ></audio>
+          </div>
+        </div>
+
+        <!-- ------------------------------------------------------------------------------------6 -->
+        <div class="story-card" style="--accent: #10b981">
+          <div class="card-image">
+            <img src="images/ui/squirrelMonkey.png" alt="Jumping Monkey" />
+            <div class="card-title">Jumping Monkey</div>
+          </div>
+          <div class="card-controls">
+            <button class="btn-replay">↺</button
+            ><button class="btn-play">▶</button>
+            <div class="progress"><div class="progress-fill"></div></div>
+            <span class="time">0:00 / 1:55</span
+            ><audio
+              preload="metadata"
+              src="audio/story/Squirrel-Monkey-Child.mp3"
+            ></audio>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="social">
+        <a href="https://instagram.com/yourpage" target="_blank"
+          ><img src="images/ui/insta.png" alt="Instagram"
+        /></a>
+        <a href="https://facebook.com/yourpage" target="_blank"
+          ><img src="images/ui/facebook.png" alt="Facebook"
+        /></a>
+        <a href="https://youtube.com/yourchannel" target="_blank"
+          ><img src="images/ui/youtube.png" alt="YouTube"
+        /></a>
+      </div>
+      <div class="footer-text">
+        Made with ❤️ for curious kids • © 2026 Kalearning
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const hamburger = document.querySelector(".hamburger");
+        const nav = document.querySelector(".nav-links");
+        hamburger.addEventListener("click", () => nav.classList.toggle("open"));
+
+        const cards = document.querySelectorAll(".story-card");
+
+        function fmt(s) {
+          const m = Math.floor(s / 60);
+          const sec = Math.floor(s % 60);
+          return `${m}:${sec.toString().padStart(2, "0")}`;
+        }
+
+        function pauseOthers(currentAudio) {
+          cards.forEach((c) => {
+            const a = c.querySelector("audio");
+            if (a !== currentAudio && !a.paused) {
+              a.pause();
+              c.classList.remove("playing");
+              c.querySelector(".btn-play").textContent = "▶";
+            }
+          });
+        }
+
+        cards.forEach((card) => {
+          const audio = card.querySelector("audio");
+          const playBtn = card.querySelector(".btn-play");
+          const replayBtn = card.querySelector(".btn-replay");
+          const progress = card.querySelector(".progress");
+          const fill = card.querySelector(".progress-fill");
+          const timeEl = card.querySelector(".time");
+          const initialDuration = timeEl.textContent.split("/")[1].trim();
+
+          playBtn.addEventListener("click", () => {
+            if (audio.paused) {
+              pauseOthers(audio);
+              audio.play().catch(() => {});
+              card.classList.add("playing");
+              playBtn.textContent = "⏸";
+            } else {
+              audio.pause();
+              card.classList.remove("playing");
+              playBtn.textContent = "▶";
+            }
+          });
+
+          replayBtn.addEventListener("click", () => {
+            pauseOthers(audio);
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
+            card.classList.add("playing");
+            playBtn.textContent = "⏸";
+          });
+
+          audio.addEventListener("timeupdate", () => {
+            const cur = audio.currentTime;
+            const dur = audio.duration || 0;
+            fill.style.width = dur ? (cur / dur) * 100 + "%" : "0%";
+            timeEl.textContent = `${fmt(cur)} / ${dur ? fmt(dur) : initialDuration}`;
+          });
+
+          audio.addEventListener("ended", () => {
+            card.classList.remove("playing");
+            playBtn.textContent = "▶";
+            fill.style.width = "0%";
+            timeEl.textContent = `0:00 / ${initialDuration}`;
+          });
+
+          audio.addEventListener("pause", () => {
+            if (audio.currentTime !== audio.duration) {
+              card.classList.remove("playing");
+              playBtn.textContent = "▶";
+            }
+          });
+
+          progress.addEventListener("click", (e) => {
+            const rect = progress.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            if (audio.duration) {
+              audio.currentTime = pct * audio.duration;
+            }
+          });
+
+          audio.addEventListener("loadedmetadata", () => {
+            timeEl.textContent = `0:00 / ${fmt(audio.duration)}`;
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

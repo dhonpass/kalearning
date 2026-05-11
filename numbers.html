@@ -1,0 +1,1030 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Playables SDK -->
+    <script>
+      // Playables SDK v1.0.0
+      // Game lifecycle bridge: rAF-based game-ready detection + event communication
+      (function () {
+        "use strict";
+
+        // Idempotency: skip if already initialized (e.g., server-side injection
+        // followed by client-side inject-javascript via the Bloks webview component).
+        if (window.playablesSDK) return;
+
+        var HANDLER_NAME = "playablesGameEventHandler";
+        var ANDROID_BRIDGE_NAME = "_MetaPlayablesBridge";
+        var RAF_FRAME_THRESHOLD = 3;
+
+        var gameReadySent = false;
+        var firstInteractionSent = false;
+        var errorSent = false;
+        var frameCount = 0;
+        var originalRAF = window.requestAnimationFrame;
+
+        // --- Transport Layer ---
+
+        function hasIOSBridge() {
+          return !!(
+            window.webkit &&
+            window.webkit.messageHandlers &&
+            window.webkit.messageHandlers[HANDLER_NAME]
+          );
+        }
+
+        function hasAndroidBridge() {
+          return !!(
+            window[ANDROID_BRIDGE_NAME] &&
+            typeof window[ANDROID_BRIDGE_NAME].postEvent === "function"
+          );
+        }
+
+        function isInIframe() {
+          return !!(window.parent && window.parent !== window);
+        }
+
+        function sendEvent(eventName, payload) {
+          var message = {
+            type: eventName,
+            payload: payload || {},
+            timestamp: Date.now(),
+          };
+
+          if (hasIOSBridge()) {
+            try {
+              window.webkit.messageHandlers[HANDLER_NAME].postMessage(message);
+            } catch (e) {
+              /* ignore */
+            }
+            return;
+          }
+
+          if (hasAndroidBridge()) {
+            try {
+              var p = payload || {};
+              p.__secureToken = window.__fbAndroidBridgeAuthToken || "";
+              window[ANDROID_BRIDGE_NAME].postEvent(
+                eventName,
+                JSON.stringify(p),
+              );
+            } catch (e) {
+              /* ignore */
+            }
+            return;
+          }
+
+          if (isInIframe()) {
+            try {
+              window.parent.postMessage(message, "*");
+            } catch (e) {
+              /* ignore */
+            }
+            return;
+          }
+        }
+
+        // --- rAF Game-Ready Detection ---
+
+        function onFrame() {
+          if (gameReadySent) return;
+
+          frameCount++;
+          if (frameCount >= RAF_FRAME_THRESHOLD) {
+            gameReadySent = true;
+            sendEvent("game_ready", {
+              frame_count: frameCount,
+              detected_at: Date.now(),
+            });
+            return;
+          }
+
+          originalRAF.call(window, onFrame);
+        }
+
+        if (originalRAF) {
+          window.requestAnimationFrame = function (callback) {
+            if (!gameReadySent) {
+              return originalRAF.call(window, function (timestamp) {
+                frameCount++;
+                if (frameCount >= RAF_FRAME_THRESHOLD && !gameReadySent) {
+                  gameReadySent = true;
+                  sendEvent("game_ready", {
+                    frame_count: frameCount,
+                    detected_at: Date.now(),
+                  });
+                }
+                callback(timestamp);
+              });
+            }
+            return originalRAF.call(window, callback);
+          };
+        }
+
+        // --- First User Interaction Detection ---
+
+        function setupFirstInteractionDetection() {
+          var events = ["touchstart", "mousedown", "keydown"];
+
+          function onFirstInteraction() {
+            if (firstInteractionSent) return;
+            firstInteractionSent = true;
+            sendEvent("user_interaction_start", null);
+
+            for (var i = 0; i < events.length; i++) {
+              document.removeEventListener(events[i], onFirstInteraction, true);
+            }
+          }
+
+          for (var i = 0; i < events.length; i++) {
+            document.addEventListener(events[i], onFirstInteraction, true);
+          }
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener(
+            "DOMContentLoaded",
+            setupFirstInteractionDetection,
+          );
+        } else {
+          setupFirstInteractionDetection();
+        }
+
+        // --- Auto Error Capture ---
+
+        window.addEventListener("error", function (event) {
+          if (errorSent) return;
+          errorSent = true;
+          sendEvent("error", {
+            message: event.message || "Unknown error",
+            source: event.filename || "",
+            lineno: event.lineno || 0,
+            colno: event.colno || 0,
+            auto_captured: true,
+          });
+        });
+
+        window.addEventListener("unhandledrejection", function (event) {
+          if (errorSent) return;
+          errorSent = true;
+          var reason = event.reason;
+          sendEvent("error", {
+            message: reason instanceof Error ? reason.message : String(reason),
+            type: "unhandled_promise_rejection",
+            auto_captured: true,
+          });
+        });
+
+        // --- Public API ---
+
+        window.playablesSDK = {
+          complete: function (score) {
+            sendEvent("game_ended", {
+              score: score,
+              completed: true,
+            });
+          },
+
+          error: function (message) {
+            if (errorSent) return;
+            errorSent = true;
+            sendEvent("error", {
+              message: message || "Unknown error",
+              auto_captured: false,
+            });
+          },
+
+          sendEvent: function (eventName, payload) {
+            if (!eventName || typeof eventName !== "string") return;
+            sendEvent(eventName, payload);
+          },
+        };
+
+        // Kick off rAF detection in case no game code calls rAF immediately
+        if (originalRAF) {
+          originalRAF.call(window, onFrame);
+        }
+      })();
+    </script>
+    <script>
+      window.Intl = window.Intl || {};
+      Intl.t = function (s) {
+        return (Intl._locale && Intl._locale[s]) || s;
+      };
+    </script>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Tibetan Numbers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Outfit:wght@500;700&family=Noto+Serif+Tibetan:wght@600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- ==================== CSS START ==================== -->
+    <style>
+      /* ===== Tibetan Numbers - Clean CSS ===== */
+      :root {
+        --bg: #fff9f0;
+        --pink: #ff3e8a;
+        --teal-dark: #0d9488;
+        --teal-light: #2dd4bf;
+        --amber: #f59e0b;
+        --orange-1: #ff9a3d;
+        --orange-2: #ff7a1a;
+        --orange-3: #ff5c00;
+        --orange-4: #ff4a00;
+        --white: #ffffff;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        font-family:
+          "Outfit",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: var(--bg);
+        color: #1f2937;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow-x: hidden;
+      }
+
+      .fredoka {
+        font-family: "Fredoka", sans-serif;
+      }
+      .tibetan {
+        font-family: "Noto Serif Tibetan", serif;
+      }
+
+      /* Header */
+      .header {
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 16px 20px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .btn-back {
+        font-family: "Fredoka", sans-serif;
+        background: linear-gradient(135deg, #ff5a8a 0%, #ff7ba8 100%);
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        box-shadow:
+          0 10px 20px -6px rgba(255, 90, 138, 0.45),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        transition: transform 0.15s;
+      }
+      .btn-back:active {
+        transform: scale(0.95);
+      }
+
+      /* Top action buttons */
+      .top-actions {
+        display: flex;
+        gap: 80px;
+        justify-content: center;
+        margin: 52px 0 32px;
+        flex-wrap: wrap;
+      }
+      .action-btn {
+        font-family: "Fredoka", sans-serif;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 15px;
+        font-weight: 600;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        color: white;
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+        box-shadow:
+          0 8px 20px rgba(0, 0, 0, 0.12),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      }
+      .action-btn:active {
+        transform: translateY(1px) scale(0.98);
+      }
+      .action-btn svg {
+        width: 18px;
+        height: 18px;
+      }
+      .action-back {
+        background: linear-gradient(135deg, #ff5a8a 0%, #ff7ba8 100%);
+        box-shadow: 0 8px 20px -4px rgba(255, 90, 138, 0.45);
+      }
+      .action-replay {
+        background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+        box-shadow: 0 8px 20px -4px rgba(139, 92, 246, 0.45);
+      }
+
+      /* Main */
+      .main {
+        flex: 1;
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 16px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .title {
+        font-family: "Fredoka", sans-serif;
+        font-weight: 700;
+        color: var(--pink);
+        text-align: center;
+        margin-bottom: 40px;
+        line-height: 1.1;
+        font-size: 40px;
+      }
+
+      /* Carousel */
+      .carousel {
+        position: relative;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 320px;
+      }
+
+      .nav-btn {
+        position: absolute;
+        z-index: 10px;
+        width: 68px;
+        height: 68px;
+        border: none;
+        border-radius: 14px;
+        color: white;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        transition: transform 0.2s;
+        animation: float 3s ease-in-out infinite;
+      }
+      .nav-btn:active {
+        transform: scale(0.9);
+      }
+      .nav-btn.clicked {
+        transform: scale(0.9) !important;
+        transition: transform 0.9s;
+      }
+      .nav-btn svg {
+        width: 24px;
+        height: 24px;
+        stroke-width: 3.5;
+      }
+
+      .nav-prev {
+        left: 4px;
+        background: linear-gradient(
+          145deg,
+          #2dd4bf 0%,
+          #14b8a6 40%,
+          #0d9488 100%
+        );
+        box-shadow: 0 14px 28px -8px rgba(13, 148, 136, 0.45);
+      }
+      .nav-next {
+        right: 4px;
+        background: linear-gradient(
+          145deg,
+          #fde68a 0%,
+          #fbbf24 30%,
+          #f59e0b 100%
+        );
+        color: #8b5a00;
+        animation-delay: 1.5s;
+        box-shadow: 0 14px 28px -8px rgba(245, 158, 11, 0.45);
+      }
+
+      /* Card */
+      .card-wrap {
+        position: relative;
+      }
+
+      .card-glow {
+        position: absolute;
+        inset: -32px;
+        background: radial-gradient(
+          circle,
+          rgba(255, 138, 0, 0.2),
+          transparent 70%
+        );
+        filter: blur(30px);
+        border-radius: 80px;
+        pointer-events: none;
+      }
+
+      .card {
+        padding-top: 80px;
+        position: relative;
+        width: min(70vw, 300px);
+        height: min(70vw, 300px);
+        border-radius: 32px;
+        background: linear-gradient(
+          160deg,
+          var(--orange-1) 0%,
+          var(--orange-2) 35%,
+          var(--orange-3) 70%,
+          var(--orange-4) 100%
+        );
+        box-shadow:
+          0 35px 60px -15px rgba(255, 106, 0, 0.35),
+          0 20px 40px -20px rgba(255, 77, 0, 0.5),
+          inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        border: 7px solid white; /* thin white border - change here */
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        transition: transform 0.15s;
+      }
+      .card:active {
+        transform: scale(0.97);
+      }
+
+      .card-sheen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.4),
+          transparent
+        );
+      }
+
+      .card-dots {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: grid;
+        grid-template-columns: repeat(3, 6px);
+        gap: 6px;
+        opacity: 0.25;
+      }
+      .card-dots span {
+        width: 6px;
+        height: 6px;
+        background: white;
+        border-radius: 50%;
+      }
+
+      .tibetan-char {
+        color: white;
+        font-size: clamp(90px, 22vw, 170px);
+        line-height: 1;
+        text-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        user-select: none;
+      }
+
+      .card-img {
+        width: clamp(160px, 26vw, 240px);
+        height: clamp(160px, 26vw, 240px);
+        object-fit: contain;
+        filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.25));
+        display: none;
+      }
+
+      /* English word */
+      .english {
+        margin-top: 28px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+      }
+      .english-text {
+        font-family: "Fredoka", sans-serif;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--teal-dark);
+        font-size: clamp(22px, 6vw, 40px);
+        text-shadow: 0 3px 0 #e0f2f1;
+      }
+
+      /* Dots */
+      .dots {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 0 16px;
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #fdba74;
+        opacity: 0.5;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .dot.active {
+        width: 26px;
+        border-radius: 6px;
+        background: var(--pink);
+        opacity: 1;
+      }
+
+      /* Animations */
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+      @keyframes pop {
+        0% {
+          transform: scale(0.7) rotate(-5deg);
+          opacity: 0;
+        }
+        60% {
+          transform: scale(1.12) rotate(2deg);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1) rotate(0);
+        }
+      }
+      .pop {
+        animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      /* Responsive */
+      @media (min-width: 640px) {
+        .header {
+          padding: 20px 32px 16px;
+        }
+        .nav-btn {
+          width: 60px;
+          height: 60px;
+          border-radius: 18px;
+        }
+        .nav-prev {
+          left: 16px;
+        }
+        .nav-next {
+          right: 16px;
+        }
+        .card {
+          width: 340px;
+          height: 340px;
+          border-radius: 44px;
+        }
+      }
+      @media (min-width: 768px) {
+        .nav-btn {
+          width: 72px;
+          height: 72px;
+        }
+        .nav-prev {
+          left: 40px;
+        }
+        .nav-next {
+          right: 40px;
+        }
+        .card {
+          width: 380px;
+          height: 380px;
+          border-radius: 48px;
+        }
+      }
+
+      /* ===== MOBILE FIX - prevent overlap ===== */
+      @media (max-width: 640px) {
+        .card {
+          width: min(62vw, 260px) !important;
+          height: min(62vw, 260px) !important;
+        }
+      }
+      @media (max-width: 480px) {
+        .carousel {
+          min-height: 280px;
+          padding: 0 52px; /* make space for side buttons */
+        }
+        .card {
+          width: min(55vw, 210px) !important;
+          height: min(55vw, 210px) !important;
+          border-radius: 24px;
+        }
+        .nav-btn {
+          width: 60px !important;
+          height: 60px !important;
+          border-radius: 12px;
+        }
+        .nav-btn svg {
+          width: 20px;
+          height: 20px;
+        }
+        .nav-prev {
+          left: 6px !important;
+        }
+        .nav-next {
+          right: 6px !important;
+        }
+        .tibetan-char {
+          font-size: clamp(65px, 16vw, 110px) !important;
+        }
+      }
+      @media (max-width: 375px) {
+        .carousel {
+          padding: 0 48px;
+        }
+        .card {
+          width: min(52vw, 190px) !important;
+          height: min(52vw, 190px) !important;
+        }
+        .nav-btn {
+          width: 40px !important;
+          height: 40px !important;
+        }
+      }
+    </style>
+    <!-- ==================== CSS END ==================== -->
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="header"></header>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="top-actions">
+        <button id="backBtn" class="action-btn action-back">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+          >
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+          <span>Back</span>
+        </button>
+        <button id="replayBtn" class="action-btn action-replay">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="3"
+            stroke-linecap="round"
+          >
+            <path d="M21 12a9 9 0 1 1-6.36-8.49" />
+            <path d="M21 3v6h-6" />
+          </svg>
+          <span>Replay</span>
+        </button>
+      </div>
+
+      <h1 class="title">Tibetan Numbers</h1>
+
+      <div class="carousel">
+        <button id="prevBtn" class="nav-btn nav-prev" aria-label="Previous">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+
+        <button id="nextBtn" class="nav-btn nav-next" aria-label="Next">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+
+        <div class="card-wrap">
+          <div class="card-glow"></div>
+          <div id="card" class="card">
+            <div class="card-sheen"></div>
+            <div class="card-dots">
+              <span></span><span></span><span></span><span></span><span></span
+              ><span></span>
+            </div>
+            <div id="cardContent">
+              <span id="tibetanChar" class="tibetan tibetan-char"></span>
+              <img id="tibetanImg" class="card-img" alt="" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="english">
+        <p id="englishWord" class="english-text"></p>
+      </div>
+
+      <div id="dots" class="dots"></div>
+    </main>
+
+    <!-- ==================== JAVASCRIPT START ==================== -->
+    <script>
+      // ===== Tibetan Numbers - Clean JS =====
+      const numbers = [
+        {
+          tibetan: "༡",
+          english: "ONE",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/1n.mp3",
+        },
+        {
+          tibetan: "༢",
+          english: "TWO",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/2n.mp3",
+        },
+        {
+          tibetan: "༣",
+          english: "THREE",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/3n.mp3",
+        },
+        {
+          tibetan: "༤",
+          english: "FOUR",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/4n.mp3",
+        },
+        {
+          tibetan: "༥",
+          english: "FIVE",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/5n.mp3",
+        },
+        {
+          tibetan: "༦",
+          english: "SIX",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/6n.mp3",
+        },
+        {
+          tibetan: "༧",
+          english: "SEVEN",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/7n.mp3",
+        },
+        {
+          tibetan: "༨",
+          english: "EIGHT",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/8n.mp3",
+        },
+        {
+          tibetan: "༩",
+          english: "NINE",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/9n.mp3",
+        },
+        {
+          tibetan: "༡༠",
+          english: "TEN",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/10n.mp3",
+        },
+
+        {
+          tibetan: "༠",
+          english: "ZERO",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/1n.mp3",
+        },
+        {
+          tibetan: "༡༠",
+          english: "TEN",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/10n.mp3",
+        },
+        {
+          tibetan: "༢༠",
+          english: "TWENTY",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/2n.mp3",
+        },
+        {
+          tibetan: "༣༠",
+          english: "THIRTY",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/3n.mp3",
+        },
+        {
+          tibetan: "༤༠",
+          english: "FOURTY",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/4n.mp3",
+        },
+        {
+          tibetan: "༥༠",
+          english: "FIFTY",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/5n.mp3",
+        },
+        {
+          tibetan: "༦༠",
+          english: "SIXTY",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/6n.mp3",
+        },
+        {
+          tibetan: "༧༠",
+          english: "SEVENTY",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/7n.mp3",
+        },
+        {
+          tibetan: "༨༠",
+          english: "EIGHTY",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/8n.mp3",
+        },
+        {
+          tibetan: "༩༠",
+          english: "NINTY",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/9n.mp3",
+        },
+        {
+          tibetan: "༡༠༠",
+          english: "HUNDRED",
+          img: "images/subjects/professional/army.png",
+          audio: "audio/numbers/10n.mp3",
+        },
+      ];
+
+      let current = 0;
+
+      const card = document.getElementById("card");
+      const cardContent = document.getElementById("cardContent");
+      const tibetanChar = document.getElementById("tibetanChar");
+      const tibetanImg = document.getElementById("tibetanImg");
+      const englishWord = document.getElementById("englishWord");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const dotsContainer = document.getElementById("dots");
+      const backBtn = document.getElementById("backBtn");
+      const replayBtn = document.getElementById("replayBtn");
+
+      let currentAudio = null;
+
+      function init() {
+        createDots();
+        updateDisplay();
+      }
+
+      function updateDisplay() {
+        const item = numbers[current];
+
+        // Always show Tibetan character, never load images
+        tibetanChar.textContent = item.tibetan;
+        englishWord.textContent = item.english;
+
+        tibetanImg.style.display = "none";
+        tibetanChar.style.display = "block";
+
+        // Pop animation
+        cardContent.classList.remove("pop");
+        void cardContent.offsetWidth;
+        cardContent.classList.add("pop");
+
+        updateDots();
+        playAudio(item.audio);
+      }
+
+      function playAudio(src) {
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+        if (src) {
+          try {
+            currentAudio = new Audio(src);
+            currentAudio.play().catch(() => {});
+          } catch (e) {}
+        }
+      }
+
+      function next() {
+        current = (current + 1) % numbers.length;
+        updateDisplay();
+      }
+      function prev() {
+        current = (current - 1 + numbers.length) % numbers.length;
+        updateDisplay();
+      }
+      function goTo(i) {
+        current = i;
+        updateDisplay();
+      }
+
+      function createDots() {
+        dotsContainer.innerHTML = "";
+        numbers.forEach((_, i) => {
+          const dot = document.createElement("button");
+          dot.className = "dot";
+          dot.onclick = () => goTo(i);
+          dotsContainer.appendChild(dot);
+        });
+      }
+
+      function updateDots() {
+        document.querySelectorAll(".dot").forEach((d, i) => {
+          d.classList.toggle("active", i === current);
+        });
+      }
+
+      // Events with click animation
+      function handleClick(btn, fn) {
+        btn.classList.add("clicked");
+        setTimeout(() => btn.classList.remove("clicked"), 150);
+        fn();
+      }
+
+      prevBtn.onclick = () => handleClick(prevBtn, prev);
+      nextBtn.onclick = () => handleClick(nextBtn, next);
+      card.onclick = () => handleClick(card, next);
+      backBtn.onclick = () => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = "subjects.html";
+        }
+      };
+      replayBtn.onclick = () => {
+        current = 0;
+        updateDisplay();
+      };
+
+      // Keyboard
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowRight") next();
+        if (e.key === "ArrowLeft") prev();
+      });
+
+      // Swipe
+      let startX = 0;
+      card.addEventListener(
+        "touchstart",
+        (e) => (startX = e.touches[0].clientX),
+        { passive: true },
+      );
+      card.addEventListener(
+        "touchend",
+        (e) => {
+          const dx = startX - e.changedTouches[0].clientX;
+          if (Math.abs(dx) > 50) dx > 0 ? next() : prev();
+        },
+        { passive: true },
+      );
+
+      // Start
+      init();
+    </script>
+    <!-- ==================== JAVASCRIPT END ==================== -->
+  </body>
+</html>
